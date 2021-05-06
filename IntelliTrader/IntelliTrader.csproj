@@ -10,6 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ExchangeSharp\ExchangeSharp\ExchangeSharp.csproj" />
     <ProjectReference Include="..\IntelliTrader.Backtesting\IntelliTrader.Backtesting.csproj" />
     <ProjectReference Include="..\IntelliTrader.Core\IntelliTrader.Core.csproj" />
     <ProjectReference Include="..\IntelliTrader.Exchange.Base\IntelliTrader.Exchange.Base.csproj" />

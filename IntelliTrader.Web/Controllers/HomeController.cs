@@ -15,10 +15,20 @@ using Microsoft.Extensions.Primitives;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
 using System.Text;
+using System.Diagnostics;
 
 namespace IntelliTrader.Web.Controllers
 {
-    [Authorize]
+    public class ErrorViewModel
+    {
+        public string RequestId { get; set; }
+
+        public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+    }
+
+
+    //[Authorize]
+    [TypeFilter(typeof(CustomExceptionFilter))]
     public class HomeController : Controller
     {
         #region Authentication
@@ -40,6 +50,17 @@ namespace IntelliTrader.Web.Controllers
                 return await PerformLogin(true);
             }
         }
+
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel
+            {
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+            });
+        }
+
 
         [HttpPost]
         [AllowAnonymous]

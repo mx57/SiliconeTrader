@@ -29,7 +29,7 @@ namespace IntelliTrader.Web
 
             try
             {
-                var contentRoot = Path.GetFullPath(Directory.GetCurrentDirectory() + @"/../IntelliTrader.Web");
+                var contentRoot = Path.GetFullPath(Directory.GetCurrentDirectory() + @"../../../../../IntelliTrader.Web");
 #if RELEASE
                 if (!System.Diagnostics.Debugger.IsAttached)
                 {
@@ -40,6 +40,7 @@ namespace IntelliTrader.Web
                 var webHostBuilder = new WebHostBuilder()
                     .UseContentRoot(contentRoot)
                     .UseStartup<Startup>()
+                    .CaptureStartupErrors(true) 
                     .UseKestrel(options =>
                     {
                         if (Config.SSLEnabled)
@@ -73,6 +74,7 @@ namespace IntelliTrader.Web
             }
             catch (Exception ex)
             {
+                //C:\_bot_architect\SiliconeTrader\IntelliTrader.Web
                 loggingService.Error($"Unable to start Web service", ex);
             }
 
