@@ -7,6 +7,9 @@ namespace IntelliTrader.Rules
 {
     internal class RulesConfig : IRulesConfig
     {
+        /// <summary>
+        /// Rule Modules
+        /// </summary>
         public IEnumerable<ModuleRules> Modules { get; set; }
         IEnumerable<IModuleRules> IRulesConfig.Modules => Modules;
     }

@@ -4,7 +4,7 @@ using System;
 using System.IO;
 
 namespace IntelliTrader.Core
-{
+{ 
     internal class ConfigProvider : IConfigProvider
     {
         private const string ROOT_CONFIG_DIR = "config";
