@@ -1,9 +1,9 @@
 {
   "apps": [
     {
-      "name": "IntelliTrader",
+      "name": "SiliconeTrader",
       "cwd": ".",
-      "script": "bin/IntelliTrader.dll",
+      "script": "bin/SiliconeTrader.dll",
       "node_args": [],
       "log_date_format": "YYYY-MM-DD HH:mm Z",
       "exec_interpreter": "dotnet",

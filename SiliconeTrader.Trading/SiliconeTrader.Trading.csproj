@@ -1,0 +1,10 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SiliconeTrader.Core\SiliconeTrader.Core.csproj" />
+    <ProjectReference Include="..\SiliconeTrader.Exchange.Base\SiliconeTrader.Exchange.Base.csproj" />
+    <ProjectReference Include="..\SiliconeTrader.Signals.Base\SiliconeTrader.Signals.Base.csproj" />
+  </ItemGroup>
+</Project>
