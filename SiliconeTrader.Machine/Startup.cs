@@ -1,6 +1,8 @@
+using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
@@ -10,13 +12,12 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
 using Microsoft.OpenApi.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace SiliconeTrader.Machine
 {
+
     public class Startup
     {
         public Startup(IConfiguration configuration)
@@ -32,6 +33,17 @@ namespace SiliconeTrader.Machine
             // Disabled until I have a working Azure environment.s
             //services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             //    .AddMicrosoftIdentityWebApi(Configuration.GetSection("AzureAd"));
+            //services.AddHttpsRedirection(options =>
+            //{
+            //    options.HttpsPort = 443;
+            //});
+
+            services
+                .AddHealthChecksUI()
+                .AddInMemoryStorage()
+                .Services
+                .AddHealthChecks()
+                .AddCheck<IntelliTraderHealthChecker>(nameof(IntelliTraderHealthChecker));
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -50,7 +62,7 @@ namespace SiliconeTrader.Machine
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "SiliconeTrader.Machine v1"));
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseRouting();
 
@@ -59,7 +71,13 @@ namespace SiliconeTrader.Machine
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapHealthChecks("node-status", new HealthCheckOptions()
+                {
+                    Predicate = _ => true,
+                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+                });
                 endpoints.MapControllers();
+                endpoints.MapHealthChecksUI();
             });
         }
     }

@@ -21,7 +21,7 @@ namespace SiliconeTrader.UI.Controllers
             return View();
         }
 
-        public async Task<IActionResult> Dashboard()
+        public IActionResult Dashboard()
         {
             return View();
         }
@@ -102,19 +102,32 @@ namespace SiliconeTrader.UI.Controllers
 
         public async Task<IActionResult> Status()
         {
-            var httpClient = new HttpClient
+            try
             {
-                BaseAddress = new Uri("https://localhost:49153") //var orcaBase = Environment.GetEnvironmentVariable("ORCA_API_URL");
-            };
+                var orcaBase = Environment.GetEnvironmentVariable("ORCA_API_URL");
+                var httpClient = new HttpClient
+                {
+                    BaseAddress = new Uri(orcaBase)
+                };
 
-            var response = await httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, "api/ORCA/v1/status"));
+                var response = await httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, "api/ORCA/v1/status"));
 
-            return Json(new
+                return Json(new
+                {
+                    InstanceName = "DEFAULT",
+                    ReadOnlyMode = true,
+                    Data = await response.Content.ReadAsStringAsync()
+                });
+            }
+            catch (Exception ex)
             {
-                InstanceName = "DEFAULT",
-                ReadOnlyMode = true,
-                Data = await response.Content.ReadAsStringAsync()
-            });
+                return Json(new
+                {
+                    InstanceName = "DEFAULT",
+                    ReadOnlyMode = true,
+                    Data = ex.Message
+                });
+            }
         }
 
         public IActionResult Trades(DateTimeOffset id)
