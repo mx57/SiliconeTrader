@@ -23,18 +23,16 @@ namespace SiliconeTrader.Core
         private readonly ITasksService tasksService;
         private readonly INotificationService notificationService;
         private readonly IHealthCheckService healthCheckService;
-        private readonly ITradingService tradingService;
-        private readonly IWebService webService;
+        private readonly ITradingService tradingService; 
         private readonly IBacktestingService backtestingService;
 
-        public CoreService(ILoggingService loggingService, ITasksService tasksService, INotificationService notificationService, IHealthCheckService healthCheckService, ITradingService tradingService, IWebService webService, IBacktestingService backtestingService)
+        public CoreService(ILoggingService loggingService, ITasksService tasksService, INotificationService notificationService, IHealthCheckService healthCheckService, ITradingService tradingService, IBacktestingService backtestingService)
         {
             this.loggingService = loggingService;
             this.tasksService = tasksService;
             this.notificationService = notificationService;
             this.healthCheckService = healthCheckService;
-            this.tradingService = tradingService;
-            this.webService = webService;
+            this.tradingService = tradingService; 
             this.backtestingService = backtestingService;
 
             // Log unhandled exceptions
@@ -69,12 +67,7 @@ namespace SiliconeTrader.Core
             if (notificationService.Config.Enabled)
             {
                 notificationService.Start();
-            }
-            if (webService.Config.Enabled)
-            {
-                webService.Start();
-            }
-
+            } 
             ThreadPool.QueueUserWorkItem((state) =>
             {
                 Thread.Sleep(2000);
@@ -97,11 +90,7 @@ namespace SiliconeTrader.Core
             if (notificationService.Config.Enabled)
             {
                 notificationService.Stop();
-            }
-            if (webService.Config.Enabled)
-            {
-                webService.Stop();
-            }
+            } 
             if (Config.HealthCheckInterval > 0 && (!backtestingService.Config.Enabled || !backtestingService.Config.Replay))
             {
                 healthCheckService.Stop();

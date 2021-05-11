@@ -3,6 +3,11 @@
     internal class CoreConfig : ICoreConfig
     {
         /// <summary>
+        /// Enable / disable read only mode
+        /// </summary>
+        public bool ReadOnlyMode { get; set; }
+
+        /// <summary>
         /// Enable / disable debug mode
         /// </summary>
         public bool DebugMode { get; set; } = true;
@@ -35,18 +40,7 @@
         /// to distinguish between different bot instances (when running multiple)
         /// </summary>
         public string InstanceName { get; set; } = "Main";
-
-        /// <summary>
-        /// MD5-encrypted password
-        /// TODO: move to a secure one.
-        /// </summary>
-        public string Password { get; set; }
-
-        /// <summary>
-        /// Use password authentication
-        /// </summary>
-        public bool PasswordProtected { get; set; } = true;
-
+         
         /// <summary>
         /// Timezone offset from UTC (in hours), used by stats
         /// </summary>

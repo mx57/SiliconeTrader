@@ -13,6 +13,7 @@ namespace SiliconeTrader.Machine
         {
             // from here, everything Autofac.
             // IntelliTrader code:
+            // TODO: IServiceCollection.
             _coreService = Application.Resolve<ICoreService>();
         }
 

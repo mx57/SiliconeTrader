@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -16,7 +16,6 @@
     <Content Remove="Config\rules.json" />
     <Content Remove="Config\signals.json" />
     <Content Remove="Config\trading.json" />
-    <Content Remove="Config\web.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,7 +35,6 @@
     <ProjectReference Include="..\SiliconeTrader.Signals.Base\SiliconeTrader.Signals.Base.csproj" />
     <ProjectReference Include="..\SiliconeTrader.Signals.TradingView\SiliconeTrader.Signals.TradingView.csproj" />
     <ProjectReference Include="..\SiliconeTrader.Trading\SiliconeTrader.Trading.csproj" />
-    <ProjectReference Include="..\SiliconeTrader.Web\SiliconeTrader.Web.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Config\backtesting.json" />
@@ -60,7 +58,9 @@
     <None Include="Config\trading.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
-    <None Include="Config\web.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Models\Config\" />
   </ItemGroup>
 
 </Project>

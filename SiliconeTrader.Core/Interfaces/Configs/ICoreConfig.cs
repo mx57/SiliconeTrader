@@ -6,9 +6,8 @@ namespace SiliconeTrader.Core
 {
     public interface ICoreConfig
     {
-        bool DebugMode { get; }
-        bool PasswordProtected { get; }
-        string Password { get; }
+        bool ReadOnlyMode { get; }
+        bool DebugMode { get; }  
         string InstanceName { get; }
         double TimezoneOffset { get; }
         bool HealthCheckEnabled { get; set; }

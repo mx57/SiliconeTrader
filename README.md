@@ -4,6 +4,12 @@ This repo is forked from IntelliTrader. Repurposing the codebase towards an AI e
 Original project hasn't been updated in almost 3 years. 
 I renamed it to SiliconeTrader because I want clear distinction between this upgrade and the legacy version.
 
+# Modules
+
+- `SiliconeTrader` - the Main bot API.
+- `SiliconeTrader.UI` - The Web Control Interface
+- `SiliconeTrader.Keys` : this is the key tool now. use it to encrypt access keys to exchanges.  
+
 # TODO: (not in order)
 
 - Upgrade to .net 5.0

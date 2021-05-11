@@ -67,7 +67,7 @@ namespace ExchangeSharpTests
         [TestMethod]
         public void ClampDecimalTrailingZeroesRemoved()
         {
-            decimal result = CryptoUtility.ClampDecimal(0, Decimal.MaxValue, 0.01m, 1.23456789m);
+            decimal result = CryptoUtility.ClampDecimal(0, decimal.MaxValue, 0.01m, 1.23456789m);
             result.Should().Be(1.23m);
             result.ToString(CultureInfo.InvariantCulture).Should().NotEndWith("0");
         }

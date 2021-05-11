@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31105.61
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SiliconeTrader", "SiliconeTrader\SiliconeTrader.csproj", "{E29CD1E6-AA7C-4BF8-85F3-CB3813CC7B60}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SiliconeTrader.Core", "SiliconeTrader.Core\SiliconeTrader.Core.csproj", "{E4702F59-BE3D-41E9-9769-B49122AE37F3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Signals", "Signals", "{E9A5196B-B397-4AC8-90F1-7DCFB887E4DF}"
@@ -21,8 +19,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SiliconeTrader.Exchange.Bin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SiliconeTrader.Trading", "SiliconeTrader.Trading\SiliconeTrader.Trading.csproj", "{F0ED2F66-4A02-4B9B-9775-0FCEEDC0E5C2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SiliconeTrader.Web", "SiliconeTrader.Web\SiliconeTrader.Web.csproj", "{802FF51C-E66D-44BC-B26F-C72C68ED9E56}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SiliconeTrader.Rules", "SiliconeTrader.Rules\SiliconeTrader.Rules.csproj", "{A7177BC2-2912-440A-BBBE-A2DE3D001918}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SiliconeTrader.Backtesting", "SiliconeTrader.Backtesting\SiliconeTrader.Backtesting.csproj", "{20657014-0DC0-43E6-8351-E94F78095DFC}"
@@ -38,11 +34,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExchangeSharp", "ExchangeSharp\ExchangeSharp\ExchangeSharp.csproj", "{0D9078C5-8C56-49B8-873D-F4A53116033C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SiliconeTrader.Keys", "SiliconeTrader.Keys\SiliconeTrader.Keys.csproj", "{CD64561F-5EB0-43F2-ABFD-AD767E8FBC1D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExchangeSharpConsole", "ExchangeSharp\ExchangeSharpConsole\ExchangeSharpConsole.csproj", "{6A7EC1D0-DAF7-414C-945E-F0DAF3646661}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SiliconeTrader.Machine", "SiliconeTrader.Machine\SiliconeTrader.Machine.csproj", "{572ED0F4-8974-4336-B3E7-BF0E00BD84AC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExchangeSharpTests", "ExchangeSharp\ExchangeSharpTests\ExchangeSharpTests.csproj", "{911C0936-8304-490F-BAA6-9F2695BDCB08}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SiliconeTrader.UI", "SiliconeTrader.UI\SiliconeTrader.UI.csproj", "{4200AC84-05A3-449E-9EEB-E5B632A13450}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{73599D37-7FEA-49FB-A4BA-0BDF4C1E9C7C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExchangeSharp", "ExchangeSharp\ExchangeSharp\ExchangeSharp.csproj", "{405BCBC2-9B70-4C3B-9224-300033F20EC7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,10 +50,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E29CD1E6-AA7C-4BF8-85F3-CB3813CC7B60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E29CD1E6-AA7C-4BF8-85F3-CB3813CC7B60}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E29CD1E6-AA7C-4BF8-85F3-CB3813CC7B60}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E29CD1E6-AA7C-4BF8-85F3-CB3813CC7B60}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E4702F59-BE3D-41E9-9769-B49122AE37F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E4702F59-BE3D-41E9-9769-B49122AE37F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E4702F59-BE3D-41E9-9769-B49122AE37F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -78,10 +74,6 @@ Global
 		{F0ED2F66-4A02-4B9B-9775-0FCEEDC0E5C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F0ED2F66-4A02-4B9B-9775-0FCEEDC0E5C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F0ED2F66-4A02-4B9B-9775-0FCEEDC0E5C2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{802FF51C-E66D-44BC-B26F-C72C68ED9E56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{802FF51C-E66D-44BC-B26F-C72C68ED9E56}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{802FF51C-E66D-44BC-B26F-C72C68ED9E56}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{802FF51C-E66D-44BC-B26F-C72C68ED9E56}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A7177BC2-2912-440A-BBBE-A2DE3D001918}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A7177BC2-2912-440A-BBBE-A2DE3D001918}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A7177BC2-2912-440A-BBBE-A2DE3D001918}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -90,18 +82,26 @@ Global
 		{20657014-0DC0-43E6-8351-E94F78095DFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{20657014-0DC0-43E6-8351-E94F78095DFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{20657014-0DC0-43E6-8351-E94F78095DFC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0D9078C5-8C56-49B8-873D-F4A53116033C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0D9078C5-8C56-49B8-873D-F4A53116033C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0D9078C5-8C56-49B8-873D-F4A53116033C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0D9078C5-8C56-49B8-873D-F4A53116033C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6A7EC1D0-DAF7-414C-945E-F0DAF3646661}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6A7EC1D0-DAF7-414C-945E-F0DAF3646661}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6A7EC1D0-DAF7-414C-945E-F0DAF3646661}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6A7EC1D0-DAF7-414C-945E-F0DAF3646661}.Release|Any CPU.Build.0 = Release|Any CPU
-		{911C0936-8304-490F-BAA6-9F2695BDCB08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{911C0936-8304-490F-BAA6-9F2695BDCB08}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{911C0936-8304-490F-BAA6-9F2695BDCB08}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{911C0936-8304-490F-BAA6-9F2695BDCB08}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD64561F-5EB0-43F2-ABFD-AD767E8FBC1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD64561F-5EB0-43F2-ABFD-AD767E8FBC1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD64561F-5EB0-43F2-ABFD-AD767E8FBC1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD64561F-5EB0-43F2-ABFD-AD767E8FBC1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{572ED0F4-8974-4336-B3E7-BF0E00BD84AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{572ED0F4-8974-4336-B3E7-BF0E00BD84AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{572ED0F4-8974-4336-B3E7-BF0E00BD84AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{572ED0F4-8974-4336-B3E7-BF0E00BD84AC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4200AC84-05A3-449E-9EEB-E5B632A13450}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4200AC84-05A3-449E-9EEB-E5B632A13450}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4200AC84-05A3-449E-9EEB-E5B632A13450}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4200AC84-05A3-449E-9EEB-E5B632A13450}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73599D37-7FEA-49FB-A4BA-0BDF4C1E9C7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73599D37-7FEA-49FB-A4BA-0BDF4C1E9C7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73599D37-7FEA-49FB-A4BA-0BDF4C1E9C7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73599D37-7FEA-49FB-A4BA-0BDF4C1E9C7C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{405BCBC2-9B70-4C3B-9224-300033F20EC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{405BCBC2-9B70-4C3B-9224-300033F20EC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{405BCBC2-9B70-4C3B-9224-300033F20EC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{405BCBC2-9B70-4C3B-9224-300033F20EC7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -111,9 +111,7 @@ Global
 		{7587243F-1361-4749-85EA-457303C48DC5} = {E9A5196B-B397-4AC8-90F1-7DCFB887E4DF}
 		{55A29746-4B68-42B6-BC07-5243016BDA17} = {7C3B0DA6-D479-4B65-994E-4277DF073B83}
 		{A7487CA9-F3F6-496E-9D58-11D893BD8813} = {7C3B0DA6-D479-4B65-994E-4277DF073B83}
-		{0D9078C5-8C56-49B8-873D-F4A53116033C} = {7C3B0DA6-D479-4B65-994E-4277DF073B83}
-		{6A7EC1D0-DAF7-414C-945E-F0DAF3646661} = {7C3B0DA6-D479-4B65-994E-4277DF073B83}
-		{911C0936-8304-490F-BAA6-9F2695BDCB08} = {7C3B0DA6-D479-4B65-994E-4277DF073B83}
+		{405BCBC2-9B70-4C3B-9224-300033F20EC7} = {7C3B0DA6-D479-4B65-994E-4277DF073B83}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {524E84EB-C228-46B9-B474-621BC86BB3E5}

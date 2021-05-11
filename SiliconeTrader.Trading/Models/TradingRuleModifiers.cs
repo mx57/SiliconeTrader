@@ -53,6 +53,6 @@ namespace SiliconeTrader.Trading
         public ArbitrageType? ArbitrageType { get; set; }
         public decimal? ArbitrageBuyMultiplier { get; set; }
         public decimal? ArbitrageSellMultiplier { get; set; }
-        public List<String> ArbitrageSignalRules { get; set; }
+        public List<string> ArbitrageSignalRules { get; set; }
     }
 }

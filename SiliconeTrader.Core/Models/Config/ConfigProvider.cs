@@ -70,9 +70,8 @@ namespace SiliconeTrader.Core
         }
 
         private IConfigurationRoot GetConfig(string configPath, Action<IConfigurationRoot> onChange)
-        {
-            //"C:\\_bot_architect\\SiliconeTrader\\SiliconeTrader\\bin\\Debug\\net5.0"
-            var fullConfigPath = new DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory(), @"..\..\..", ROOT_CONFIG_DIR)).FullName;
+        { 
+            var fullConfigPath = new DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory(), ROOT_CONFIG_DIR)).FullName;
 
             var configBuilder = new ConfigurationBuilder()
                  .SetBasePath(fullConfigPath)

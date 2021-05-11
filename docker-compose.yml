@@ -1,0 +1,15 @@
+version: '3.4'
+
+services:
+  siliconetrader.ui:
+    image: ${DOCKER_REGISTRY-}siliconetraderui
+    build:
+      context: .
+      dockerfile: SiliconeTrader.UI/Dockerfile
+
+  siliconetrader.machine:
+    image: ${DOCKER_REGISTRY-}siliconetradermachine
+    build:
+      context: .
+      dockerfile: SiliconeTrader.Machine/Dockerfile
+

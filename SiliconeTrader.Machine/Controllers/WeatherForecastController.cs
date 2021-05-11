@@ -29,6 +29,8 @@ namespace SiliconeTrader.Machine.Controllers
         public WeatherForecastController(ILogger<WeatherForecastController> logger)
         {
             _logger = logger;
+
+            // TODO: IServiceCollection.
             _coreService = Application.Resolve<ICoreService>();
         }
 

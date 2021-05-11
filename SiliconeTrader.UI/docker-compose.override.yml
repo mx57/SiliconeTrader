@@ -1,0 +1,21 @@
+version: '3.4'
+
+services: 
+  ControlCenter:
+    image: ControlCenter
+    container_name: ControlCenter
+    build:
+      context: .
+      dockerfile: SiliconeTrader.UI/Dockerfile
+    ports:
+        - "0.0.0.0:8081:443"
+    networks:
+      - my-network
+    environment:
+      - API_URL=siliconetrader.machine:8080
+  
+networks:
+  my-network:
+    external: true
+
+# TODO: get docker-compose working

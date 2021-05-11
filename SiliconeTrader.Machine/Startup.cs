@@ -54,8 +54,8 @@ namespace SiliconeTrader.Machine
 
             app.UseRouting();
 
-            app.UseAuthentication();
-            app.UseAuthorization();
+            //app.UseAuthentication();
+            //app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
