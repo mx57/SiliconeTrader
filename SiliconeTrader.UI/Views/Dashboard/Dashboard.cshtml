@@ -1,14 +1,16 @@
-﻿@model DashboardViewModel
+﻿@model DefaultViewModel
 @{
     ViewData["Title"] = "Dashboard";
     ViewData["Instance"] = Model.InstanceName;
 }
 
-@section AddToHead{
-    <link rel="stylesheet" type="text/css" href="@Url.Content("~/Static/Styles/Views/dashboard.css")">
-    <script type="text/javascript" src="@Url.Content("~/Static/Scripts/Views/dashboard.js")"></script>
+@section Styles{ 
+    <link href="~/Styles/Views/dashboard.css" rel="stylesheet" />
 }
+@section Scripts{
 
+    <script src="~/js/Views/dashboard.js"></script>
+}
 <div>
     <table class="table table-hover table-striped" id="tradingPairsTable" style="width: 100%">
         <thead>
@@ -63,14 +65,14 @@
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                <h5 class="modal-title" id="modalTitle"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                    <h5 class="modal-title" id="modalTitle"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
                 <div class="modal-body" id="modalContent"></div>
                 <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -105,9 +107,9 @@
                 </div>
                 <div class="manual-order">
                     <span>Amount:</span>&nbsp;&nbsp;<input type="text" id="amount" />
-                    <button class="btn btn-sm btn-info" onclick="sellPair(this);" @if (Model.ReadOnlyMode) { <text>disabled</text> }>Sell</button>
-                    <button class="btn btn-sm btn-warning" onclick="buyPair(this);" @if (Model.ReadOnlyMode) { <text>disabled</text> }>Buy</button>
-                    <button class="btn btn-sm btn-primary" onclick="swapPair(this);" @if (Model.ReadOnlyMode) { <text>disabled</text> }>Swap</button>
+                    <button class="btn btn-sm btn-info" onclick="sellPair(this);" @if (Model.ReadOnlyMode) { <text> disabled</text> }>Sell</button>
+                    <button class="btn btn-sm btn-warning" onclick="buyPair(this);" @if (Model.ReadOnlyMode) { <text> disabled</text> }>Buy</button>
+                    <button class="btn btn-sm btn-primary" onclick="swapPair(this);" @if (Model.ReadOnlyMode) { <text> disabled</text> }>Swap</button>
                 </div>
             </div>
         </div>

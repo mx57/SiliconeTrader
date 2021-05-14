@@ -1,15 +1,15 @@
 ﻿using SiliconeTrader.Core;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace SiliconeTrader.UI.Models
+namespace SiliconeTrader.Machine.Client.Models
 {
-    public class TradesViewModel : BaseViewModel
+    public class TradesViewModel : DefaultViewModel
     {
-        public double TimezoneOffset { get; set; }
         public DateTimeOffset Date { get; set; }
+
+        public double TimezoneOffset { get; set; }
+
         public List<TradeResult> Trades { get; set; }
     }
 }

@@ -4,11 +4,12 @@
     ViewData["Instance"] = Model.InstanceName;
 }
 
-@section AddToHead{
-    <link rel="stylesheet" type="text/css" href="@Url.Content("~/Static/Styles/Views/rules.css")">
-    <script type="text/javascript" src="@Url.Content("~/Static/Scripts/Views/rules.js")"></script>
+@section Styles{ 
+    <link href="~/Styles/Views/rules.css" rel="stylesheet" />
 }
-
+@section Scripts{
+    <script src="~/js/Views/rules.js"></script>
+}
 <div>
     <div class="sub-header">Signal Rules: @Model.SignalRuleStats.Count</div>
     <table class="table table-hover table-striped" id="rulesTable" style="width: 100%">
@@ -30,19 +31,19 @@
         <tbody>
             @foreach (var trade in Model.SignalRuleStats)
             {
-            <tr>
-                <td>@trade.Key</td>
-                <td>@trade.Value.TotalProfit.ToString("0.00000000")</td>
-                <td>@trade.Value.TotalFees.ToString("0.00000000")</td>
-                <td>@trade.Value.TotalCost.ToString("0.00000000")</td>
-                <td>@trade.Value.TotalTrades</td>
-                <td>@trade.Value.TotalOrders</td>
-                <td>@trade.Value.TotalSwaps</td>
-                <td>@trade.Value.Age.DefaultIfEmpty(0).Average().ToString("0.00")</td>
-                <td>@trade.Value.Margin.DefaultIfEmpty(0).Average().ToString("0.00")</td>
-                <td>@trade.Value.MarginDCA.DefaultIfEmpty(0).Average().ToString("0.00")</td>
-                <td>@trade.Value.DCA.DefaultIfEmpty(0).Average().ToString("0.00")</td>
-            </tr>
+                <tr>
+                    <td>@trade.Key</td>
+                    <td>@trade.Value.TotalProfit.ToString("0.00000000")</td>
+                    <td>@trade.Value.TotalFees.ToString("0.00000000")</td>
+                    <td>@trade.Value.TotalCost.ToString("0.00000000")</td>
+                    <td>@trade.Value.TotalTrades</td>
+                    <td>@trade.Value.TotalOrders</td>
+                    <td>@trade.Value.TotalSwaps</td>
+                    <td>@trade.Value.Age.DefaultIfEmpty(0).Average().ToString("0.00")</td>
+                    <td>@trade.Value.Margin.DefaultIfEmpty(0).Average().ToString("0.00")</td>
+                    <td>@trade.Value.MarginDCA.DefaultIfEmpty(0).Average().ToString("0.00")</td>
+                    <td>@trade.Value.DCA.DefaultIfEmpty(0).Average().ToString("0.00")</td>
+                </tr>
             }
         </tbody>
     </table>

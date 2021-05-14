@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using SiliconeTrader.Core;
-using SiliconeTrader.Machine.Models;
+using SiliconeTrader.Machine.Client.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,25 +14,37 @@ namespace SiliconeTrader.Machine.Controllers
     [ApiController]
     public class OrcaApiController : ControllerBase
     {
-        [HttpPost("buy")]
-        public IActionResult Buy()
+        [HttpPost("buy/{pair}/{amount}")]
+        [ProducesResponseType(201)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(422)]
+        public IActionResult Buy(string pair, string amount)
         {
-            string pair = Request.Form["pair"].ToString();
-            if (!Application.Resolve<ICoreService>().Config.ReadOnlyMode && !string.IsNullOrWhiteSpace(pair) && decimal.TryParse(Request.Form["amount"], out decimal amount) && amount > 0)
-            {
-                var tradingService = Application.Resolve<ITradingService>();
-                tradingService.Buy(new BuyOptions(pair)
-                {
-                    Amount = amount,
-                    IgnoreExisting = true,
-                    ManualOrder = true
-                });
-                return new OkResult();
-            }
-            else
+            if (Application.Resolve<ICoreService>().Config.ReadOnlyMode)
             {
                 return new BadRequestResult();
             }
+
+            if (!decimal.TryParse(amount, out decimal buyAmount))
+            {
+                return new BadRequestResult();
+            }
+
+            if (!string.IsNullOrWhiteSpace(pair) && buyAmount > 0)
+            {
+                var tradingService = Application.Resolve<ITradingService>();
+
+                tradingService.Buy(new BuyOptions(pair)
+                {
+                    Amount = buyAmount,
+                    IgnoreExisting = true,
+                    ManualOrder = true
+                });
+
+                return new OkResult();
+            }
+
+            return new BadRequestResult();
         }
 
         [HttpPost("buy-default")]
@@ -61,39 +73,12 @@ namespace SiliconeTrader.Machine.Controllers
             }
         }
 
-        [HttpGet("dashboard")]
-        public DashboardViewModel Dashboard()
-        {
-            var coreService = Application.Resolve<ICoreService>(); 
-            var model = new DashboardViewModel
-            {
-                InstanceName = coreService.Config.InstanceName,
-                Version = coreService.Version,
-                ReadOnlyMode = coreService.Config.ReadOnlyMode
-            };
-            return model;
-        }
-
-        [HttpGet("help")]
-        public HelpViewModel Help()
-        {
-            var coreService = Application.Resolve<ICoreService>(); 
-
-            var model = new HelpViewModel()
-            {
-                InstanceName = coreService.Config.InstanceName,
-                Version = coreService.Version,
-                ReadOnlyMode = coreService.Config.ReadOnlyMode
-            };
-
-            return model;
-        }
 
         [HttpGet("log")]
         public LogViewModel Log()
         {
             var coreService = Application.Resolve<ICoreService>();
-            
+
             var loggingService = Application.Resolve<ILoggingService>();
 
             var model = new LogViewModel()
@@ -111,7 +96,7 @@ namespace SiliconeTrader.Machine.Controllers
         public MarketViewModel Market()
         {
             var coreService = Application.Resolve<ICoreService>();
-            
+
             var model = new MarketViewModel
             {
                 InstanceName = coreService.Config.InstanceName,
@@ -250,7 +235,7 @@ namespace SiliconeTrader.Machine.Controllers
             }
 
             var coreService = Application.Resolve<ICoreService>();
-            
+
             var model = new RulesViewModel
             {
                 InstanceName = coreService.Config.InstanceName,
@@ -303,7 +288,7 @@ namespace SiliconeTrader.Machine.Controllers
         public SettingsViewModel Settings()
         {
             var coreService = Application.Resolve<ICoreService>();
-            
+
             var tradingService = Application.Resolve<ITradingService>();
             var allConfigurableServices = Application.Resolve<IEnumerable<IConfigurableService>>();
 
@@ -364,7 +349,7 @@ namespace SiliconeTrader.Machine.Controllers
         public StatsViewModel Stats()
         {
             var coreService = Application.Resolve<ICoreService>();
-            
+
             var tradingService = Application.Resolve<ITradingService>();
             var accountInitialBalance = tradingService.Config.VirtualTrading ? tradingService.Config.VirtualAccountInitialBalance : tradingService.Config.AccountInitialBalance;
             var accountInitialBalanceDate = tradingService.Config.VirtualTrading ? DateTimeOffset.Now.AddDays(-30) : tradingService.Config.AccountInitialBalanceDate;
@@ -451,7 +436,7 @@ namespace SiliconeTrader.Machine.Controllers
         public TradesViewModel Trades(DateTimeOffset id)
         {
             var coreService = Application.Resolve<ICoreService>();
-            
+
             var model = new TradesViewModel()
             {
                 InstanceName = coreService.Config.InstanceName,

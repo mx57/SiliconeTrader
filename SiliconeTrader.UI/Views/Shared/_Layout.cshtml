@@ -12,24 +12,18 @@
         <title>@ViewData["Title"] - SiliconeTrader</title>
     }
 
-    <link rel="icon" href="@Url.Content("~/Static/Images/favicon.ico")" type="image/x-icon" />
-    <link rel="shortcut icon" href="@Url.Content("~/Static/Images/favicon.ico")" type="image/x-icon" />
+    <link rel="icon" href="@Url.Content("~/Images/favicon.ico")" type="image/x-icon" />
+    <link rel="shortcut icon" href="@Url.Content("~/Images/favicon.ico")" type="image/x-icon" />
 
-    <link rel="stylesheet" type="text/css" href="@Url.Content("~/Static/Styles/Vendor/bootstrap.min.css")">
-    <link rel="stylesheet" type="text/css" href="@Url.Content("~/Static/Styles/Vendor/bootstrap-theme.min.css")">
-    <link rel="stylesheet" type="text/css" href="@Url.Content("~/Static/Styles/Vendor/fontawesome-all.min.css")">
-    <link rel="stylesheet" type="text/css" href="@Url.Content("~/Static/Styles/Vendor/datatables.min.css")">
-    <link rel="stylesheet" type="text/css" href="@Url.Content("~/Static/Styles/SiliconeTrader.css")">
-
-    <script type="text/javascript" src="@Url.Content("~/Static/Scripts/Vendor/jquery-3.3.1.min.js")"></script>
-    <script type="text/javascript" src="@Url.Content("~/Static/Scripts/Vendor/popper.min.js")"></script>
-    <script type="text/javascript" src="@Url.Content("~/Static/Scripts/Vendor/bootstrap.min.js")"></script>
-    <script type="text/javascript" src="@Url.Content("~/Static/Scripts/Vendor/datatables.min.js")"></script>
-    <script type="text/javascript" src="@Url.Content("~/Static/Scripts/SiliconeTrader.js")"></script>
-
-    @if (IsSectionDefined("AddToHead"))
+    <link href="~/Styles/Vendor/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Styles/Vendor/bootstrap-theme.min.css" rel="stylesheet" />
+    <link href="~/Styles/Vendor/fontawesome-all.min.css" rel="stylesheet" />
+    <link href="~/Styles/Vendor/datatables.min.css" rel="stylesheet" />
+    <link href="~/Styles/SiliconeTrader.css" rel="stylesheet" />
+    
+    @if (IsSectionDefined("Styles"))
     {
-        @RenderSection("AddToHead", required: false)
+        @RenderSection("Styles", required: false)
     }
 
     <script>
@@ -84,6 +78,13 @@
             @RenderBody()
         </div>
     </div>
+    <!-- Scripts -->
+    <script src="~/js/Vendor/jquery-3.3.1.min.js"></script>
+    <script src="~/js/Vendor/popper.min.js"></script>
+    <script src="~/js/Vendor/bootstrap.min.js"></script>
+    <script src="~/js/Vendor/datatables.min.js"></script>
+    <script src="~/js/SiliconeTrader.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    <!--// Scripts -->
 </body>
 </html>

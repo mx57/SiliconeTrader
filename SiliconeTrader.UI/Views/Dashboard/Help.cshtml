@@ -1,21 +1,23 @@
-﻿@model HelpViewModel
+﻿@model DefaultViewModel
 @{
     ViewData["Title"] = "Help";
     ViewData["Instance"] = Model.InstanceName;
     ViewData["CustomPageHeader"] = true;
 }
 
-@section AddToHead{
-    <link rel="stylesheet" type="text/css" href="@Url.Content("~/Static/Styles/Vendor/mdwiki.min.css")">
-    <link rel="stylesheet" type="text/css" href="@Url.Content("~/Static/Styles/Vendor/highlight.min.css")">
-    <link rel="stylesheet" type="text/css" href="@Url.Content("~/Static/Styles/Vendor/colorbox.min.css")">
-    <link rel="stylesheet" type="text/css" href="@Url.Content("~/Static/Styles/Views/help.css")">
-    <script type="text/javascript" src="@Url.Content("~/Static/Scripts/Vendor/highlight.min.js")"></script>
-    <script type="text/javascript" src="@Url.Content("~/Static/Scripts/Vendor/jquery.colorbox.min.js")"></script>
+@section Styles{
+    <link href="~/Styles/Vendor/mdwiki.min.css" rel="stylesheet" />
+    <link href="~/Styles/Vendor/highlight.min.css" rel="stylesheet" />
+    <link href="~/Styles/Vendor/colorbox.min.css" rel="stylesheet" />
+    <link href="~/Styles/Views/help.css" rel="stylesheet" />
+}
+@section Scripts{
+    <script src="~/js/Vendor/highlight.min.js"></script>
+    <script src="~/js/Vendor/jquery.colorbox.min.js"></script>
     <script type="text/javascript">
-        $.mdContentRoot = "/Static/Help/";
+        $.mdContentRoot = "/Help/";
     </script>
-    <script type="text/javascript" src="@Url.Content("~/Static/Scripts/Vendor/mdwiki.min.js")"></script>
+    <script src="~/js/Vendor/mdwiki.js"></script>
 }
 
 <div id="md-all" style="clear: both;">

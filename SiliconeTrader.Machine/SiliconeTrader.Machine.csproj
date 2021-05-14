@@ -34,6 +34,7 @@
     <ProjectReference Include="..\SiliconeTrader.Core\SiliconeTrader.Core.csproj" />
     <ProjectReference Include="..\SiliconeTrader.Exchange.Base\SiliconeTrader.Exchange.Base.csproj" />
     <ProjectReference Include="..\SiliconeTrader.Exchange.Binance\SiliconeTrader.Exchange.Binance.csproj" />
+    <ProjectReference Include="..\SiliconeTrader.Machine.Client\SiliconeTrader.Machine.Client.csproj" />
     <ProjectReference Include="..\SiliconeTrader.Rules\SiliconeTrader.Rules.csproj" />
     <ProjectReference Include="..\SiliconeTrader.Signals.Base\SiliconeTrader.Signals.Base.csproj" />
     <ProjectReference Include="..\SiliconeTrader.Signals.TradingView\SiliconeTrader.Signals.TradingView.csproj" />
@@ -61,9 +62,6 @@
     <None Include="Config\trading.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\Config\" />
   </ItemGroup>
 
 </Project>

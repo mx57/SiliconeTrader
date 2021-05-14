@@ -22,16 +22,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SiliconeTrader.Core\SiliconeTrader.Core.csproj" />
+    <ProjectReference Include="..\SiliconeTrader.Machine.Client\SiliconeTrader.Machine.Client.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Update="Views\Dashboard\Rules.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Models\Config\" />
   </ItemGroup>
 
 </Project>

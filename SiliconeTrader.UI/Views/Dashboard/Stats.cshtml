@@ -4,11 +4,12 @@
     ViewData["Instance"] = Model.InstanceName;
 }
 
-@section AddToHead{
-    <link rel="stylesheet" type="text/css" href="@Url.Content("~/Static/Styles/Views/stats.css")">
-    <script type="text/javascript" src="@Url.Content("~/Static/Scripts/Views/stats.js")"></script>
+@section Styles{ 
+    <link href="~/Styles/Views/stats.css" rel="stylesheet" />
 }
-
+@section Scripts{
+    <script src="~/js/Views/stats.js"></script>
+}
 <div>
     <div class="sub-header">Total Profit: @Model.Trades.Values.Sum(trades => trades.Where(t => !t.IsSwap).Sum(t => t.Profit)).ToString("0.00000000") (@Model.Trades.Values.Sum(trades => trades.Where(t => !t.IsSwap).Sum(t => t.Profit) / Model.AccountInitialBalance * 100).ToString("0.00")%) , Account Balance: @Model.AccountBalance.ToString("0.00000000") @Model.Market</div>
 
@@ -42,7 +43,8 @@
                             {
                                 var avgMargin = trades.Average(t => t.Profit / (t.Cost + (t.Metadata?.AdditionalCosts ?? 0)) * 100);
                                 @Html.Raw(avgMargin.ToString("0.00"));
-                            } else
+                            }
+                            else
                             {
                                 @Html.Raw("N/A");
                             }
@@ -53,7 +55,8 @@
                             {
                                 var avgMargin = tradesDCA.Average(t => t.Profit / (t.Cost + (t.Metadata?.AdditionalCosts ?? 0)) * 100);
                                 @Html.Raw(avgMargin.ToString("0.00"));
-                            } else
+                            }
+                            else
                             {
                                 @Html.Raw("N/A");
                             }
@@ -64,7 +67,8 @@
                             {
                                 var avgRatingBought = tradesRatingBought.Average(t => t.Metadata.BoughtRating.Value);
                                 @Html.Raw(avgRatingBought.ToString("0.000"));
-                            } else
+                            }
+                            else
                             {
                                 @Html.Raw("N/A");
                             }
@@ -75,7 +79,8 @@
                             {
                                 var avgRatingSold = tradesRatingSold.Average(t => t.Metadata.CurrentRating.Value);
                                 @Html.Raw(avgRatingSold.ToString("0.000"));
-                            } else
+                            }
+                            else
                             {
                                 @Html.Raw("N/A");
                             }
@@ -86,7 +91,8 @@
                             {
                                 var avgGlobalRatingBought = tradesGlobalRatingBought.Average(t => t.Metadata.BoughtGlobalRating.Value);
                                 @Html.Raw(avgGlobalRatingBought.ToString("0.000"));
-                            } else
+                            }
+                            else
                             {
                                 @Html.Raw("N/A");
                             }
@@ -97,14 +103,15 @@
                             {
                                 var avgGlobalRatingSold = tradesGlobalRatingSold.Average(t => t.Metadata.CurrentGlobalRating.Value);
                                 @Html.Raw(avgGlobalRatingSold.ToString("0.000"));
-                            } else
+                            }
+                            else
                             {
                                 @Html.Raw("N/A");
                             }
                         }
                     </td>
                 </tr>
-    }
+            }
         </tbody>
     </table>
     <hr />

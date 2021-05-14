@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using SiliconeTrader.UI.Models;
+using System.Diagnostics;
 
 namespace SiliconeTrader.UI.Controllers
 {
@@ -14,6 +14,12 @@ namespace SiliconeTrader.UI.Controllers
             _logger = logger;
         }
 
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
         public IActionResult Index()
         {
             return View();
@@ -22,12 +28,6 @@ namespace SiliconeTrader.UI.Controllers
         public IActionResult Privacy()
         {
             return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }
 }

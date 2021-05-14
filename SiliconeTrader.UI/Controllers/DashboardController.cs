@@ -1,14 +1,23 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SiliconeTrader.UI.Models;
+using SiliconeTrader.Machine.Client;
+using SiliconeTrader.Machine.Client.Models;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SiliconeTrader.UI.Controllers
 {
     public class DashboardController : Controller
     {
+        private readonly ITradingBotClient tradingBotClient;
+
+        public DashboardController(ITradingBotClient tradingBotClient)
+        {
+            this.tradingBotClient = tradingBotClient;
+        }
+
         [HttpPost]
         public IActionResult Buy()
         {
@@ -31,9 +40,9 @@ namespace SiliconeTrader.UI.Controllers
             return View();
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return RedirectToAction(nameof(Dashboard));
+            return Json(await tradingBotClient.Health.NodeStatus(CancellationToken.None));
         }
 
         public IActionResult Log()
