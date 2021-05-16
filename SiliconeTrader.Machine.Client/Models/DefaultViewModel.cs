@@ -4,9 +4,9 @@
     {
         public static DefaultViewModel Default => new DefaultViewModel
         {
-            InstanceName = "-0-",
+            InstanceName = "",
             ReadOnlyMode = true,
-            Version = "-0-"
+            Version = ""
         };
 
         public string Error { get; set; }

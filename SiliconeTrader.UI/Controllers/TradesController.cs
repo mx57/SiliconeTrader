@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -9,25 +8,14 @@ using SiliconeTrader.Machine.Client.Core;
 
 namespace SiliconeTrader.UI.Controllers
 {
-    public class DataController : BaseController
+    public class TradesController : BaseController
     {
-        private readonly ILogger<DashboardController> _logger;
+        private readonly ILogger<TradesController> _logger;
 
-        public DataController(ITradingBotClient botClient, ILogger<DashboardController> logger)
+        public TradesController(ITradingBotClient botClient, ILogger<TradesController> logger)
             : base(botClient)
         {
             _logger = logger;
-        }
-
-        public IActionResult Market()
-        {
-            return this.View();
-        }
-
-        [HttpPost]
-        public IActionResult MarketPairs(List<string> signalsFilter)
-        {
-            return this.View();
         }
 
         public IActionResult Trades(DateTimeOffset id)

@@ -2,7 +2,7 @@ var table = null;
 $(function () {
     table = $('#marketPairsTable').DataTable({
         ajax: {
-            url: "MarketPairs",
+            url: "Markets/MarketPairs",
             data: function (d) {
                 var signalNames = $('#signalsFilter').find(":selected").map(function () {
                     return $.trim($(this).text());
@@ -26,11 +26,11 @@ $(function () {
             },
             {
                 name: "Name",
-                data: "Name",
+                data: "name",
                 render: function (data, type, row, meta) {
-                    var outlineStyle = row.HasTradingPair ? "info" : "secondary";
-                    var element = '<div style="width: 120px"><a href="https://www.tradingview.com/chart/?symbol=' + row.TradingViewName + '" target = "_blank" class="btn btn-outline-' + outlineStyle + ' btn-sm">' + data + '</a>';
-                    if (row.SignalRules.length) {
+                    var outlineStyle = row.hasTradingPair ? "info" : "secondary";
+                    var element = '<div style="width: 120px"><a href="https://www.tradingview.com/chart/?symbol=' + row.tradingViewName + '" target = "_blank" class="btn btn-outline-' + outlineStyle + ' btn-sm">' + data + '</a>';
+                    if (row.signalRules.length) {
                         element += '&nbsp;<i class="fas fa-bolt text-info" title="Trailing"></i>';
                     }
                     element += '</div>';
@@ -39,86 +39,125 @@ $(function () {
             },
             {
                 name: "Rating",
-                data: "RatingList",
+                data: "ratingList",
                 type: "multi-value",
                 render: function (data, type, row, meta) {
-                    return data.map(function (item) { return '<div class="signal-details"><span class="signal-name">' + item.Name + '</span><span class="signal-value ' + (item.Rating != null && item.Rating >= 0 ? 'text-success' : 'text-warning') + '">' + (item.Rating != null ? item.Rating.toFixed(3) : "N/A") + '</span></div>'; }).join("");
+                    return data.map(function (item) {
+                        return '<div class="signal-details"><span class="signal-name">'
+                            + item.name + '</span><span class="signal-value '
+                            + (item.value != null && item.value >= 0 ? 'text-success' : 'text-warning') + '">'
+                            + (item.value != null ? item.value.toFixed(3) : "N/A")
+                            + '</span></div>';
+                    }).join("");
                 }
             },
             {
                 name: "RatingChange",
-                data: "RatingChangeList",
+                data: "ratingChangeList",
                 type: "multi-value",
                 render: function (data, type, row, meta) {
-                    return data.map(function (item) { return '<div class="signal-details"><span class="signal-name">' + item.Name + '</span><span class="signal-value ' + (item.RatingChange != null && item.RatingChange >= 0 ? 'text-success' : 'text-warning') + '">' + (item.RatingChange != null ? item.RatingChange.toFixed(2) : "N/A") + '</span></div>'; }).join("");
+                    return data.map(function (item) {
+                        return '<div class="signal-details"><span class="signal-name">'
+                            + item.name + '</span><span class="signal-value '
+                            + (item.value != null && item.value >= 0 ? 'text-success' : 'text-warning') + '">'
+                            + (item.value != null ? item.value.toFixed(2) : "N/A")
+                            + '</span></div>';
+                    }).join("");
                 },
                 visible: false
             },
             {
                 name: "Price",
-                data: "Price",
+                data: "price",
                 render: function (data, type, row, meta) {
                     return data;
                 }
             },
             {
                 name: "PriceChange",
-                data: "PriceChangeList",
+                data: "priceChangeList",
                 type: "multi-value",
                 render: function (data, type, row, meta) {
-                    return data.map(function (item) { return '<div class="signal-details"><span class="signal-name">' + item.Name + '</span><span class="signal-value ' + (item.PriceChange != null && item.PriceChange >= 0 ? 'text-success' : 'text-warning') + '">' + (item.PriceChange != null ? item.PriceChange.toFixed(2) : "N/A") + '</span></div>'; }).join("");
+                    return data.map(function (item) {
+                        return '<div class="signal-details"><span class="signal-name">'
+                            + item.name + '</span><span class="signal-value '
+                            + (item.value != null && item.value >= 0 ? 'text-success' : 'text-warning') + '">'
+                            + (item.value != null ? item.value.toFixed(2) : "N/A")
+                            + '</span></div>';
+                    }).join("");
                 }
             },
             {
                 name: "Spread",
-                data: "Spread",
+                data: "spread",
                 render: function (data, type, row, meta) {
                     return data;
                 }
             },
             {
                 name: "Arbitrage",
-                data: "ArbitrageList",
+                data: "arbitrageList",
                 type: "multi-value",
                 render: function (data, type, row, meta) {
-                    return data.map(function (item) { return '<div class="signal-details"><span class="signal-name">' + item.Name + '</span><span class="signal-value">' + (item.Arbitrage != null ? item.Arbitrage : "N/A") + '</span></div>'; }).join("");
+                    return data.map(function (item) {
+                        return '<div class="signal-details"><span class="signal-name">'
+                            + item.name + '</span><span class="signal-value">'
+                            + (item.arbitrage != null ? item.arbitrage : "N/A")
+                            + '</span></div>';
+                    }).join("");
                 }
             },
             {
                 name: "Volume",
-                data: "VolumeList",
+                data: "volumeList",
                 type: "multi-value",
                 render: function (data, type, row, meta) {
-                    return data.map(function (item) { return '<div class="signal-details"><span class="signal-name">' + item.Name + '</span><span class="signal-value">' + (item.Volume != null ? item.Volume : "N/A") + '</span></div>'; }).join("");
+                    return data.map(function (item) {
+                        return '<div class="signal-details"><span class="signal-name">'
+                            + item.name + '</span><span class="signal-value">'
+                            + (item.volume != null ? item.volume : "N/A")
+                            + '</span></div>';
+                    }).join("");
                 }
             },
             {
                 name: "VolumeChange",
-                data: "VolumeChangeList",
+                data: "volumeChangeList",
                 type: "multi-value",
                 render: function (data, type, row, meta) {
-                    return data.map(function (item) { return '<div class="signal-details"><span class="signal-name">' + item.Name + '</span><span class="signal-value ' + (item.VolumeChange != null && item.VolumeChange >= 0 ? 'text-success' : 'text-warning') + '">' + (item.VolumeChange != null ? item.VolumeChange.toFixed(2) : "N/A") + '</span></div>'; }).join("");
+                    return data.map(function (item) {
+                        return '<div class="signal-details"><span class="signal-name">'
+                            + item.name + '</span><span class="signal-value '
+                            + (item.value != null && item.value >= 0 ? 'text-success' : 'text-warning') + '">'
+                            + (item.value != null ? item.value.toFixed(2) : "N/A")
+                            + '</span></div>';
+                    }).join("");
                 },
                 visible: false
             },
             {
                 name: "Volatility",
-                data: "VolatilityList",
+                data: "volatilityList",
                 type: "multi-value",
                 render: function (data, type, row, meta) {
-                    return data.map(function (item) { return '<div class="signal-details"><span class="signal-name">' + item.Name + '</span><span class="signal-value">' + (item.Volatility != null ? item.Volatility.toFixed(2) : "N/A") + '</span></div>'; }).join("");
+                    return data.map(function (item) {
+                        return '<div class="signal-details"><span class="signal-name">'
+                            + item.name + '</span><span class="signal-value">'
+                            + (item.value != null ? item.value.toFixed(2) : "N/A")
+                            + '</span></div>';
+                    }).join("");
                 }
             },
             {
                 name: "TradingRules",
-                data: "Config",
+                data: "config",
                 render: function (data, type, row, meta) {
-                    return data.Rules.join("<br/>");
+                    return data.rules.join("<br/>");
                 }
             },
             {
                 name: "SignalRules",
-                data: "SignalRules",
+                data: "signalRules",
                 render: function (data, type, row, meta) {
                     return data.join("<br/>");
                 }
@@ -232,7 +271,7 @@ $(function () {
         refreshTable();
     }, false);
 
-    $.get("/SignalNames", function (data) {
+    $.get("Markets/MarketSignals", function (data) {
         $('<div class="signals-filter"><select id="signalsFilter" multiple="multiple"></div>').insertAfter(".dt-buttons");
         var signalsFilter = $("#signalsFilter");
         for (var i = 0; i < data.length; i++) {
@@ -271,10 +310,10 @@ function hideRow(row) {
 
 function format(data) {
     var details = $($("#rowDetails").html());
-    details.find("#pair").val(data.Name);
-    details.find("#amount").attr("value", data.Amount).attr("min", 0);
-    details.find("#signalRules").text(data.SignalRules.join(", "));
-    details.find("#tradingRules").text(data.Config.Rules.join(", "));
+    details.find("#pair").val(data.name);
+    details.find("#amount").attr("value", data.amount).attr("min", 0);
+    details.find("#signalRules").text(data.signalRules.join(", "));
+    details.find("#tradingRules").text(data.config.rules.join(", "));
     return details.html();
 }
 
@@ -288,7 +327,7 @@ function showSettings(e) {
     var pair = $(e).closest(".row-details").find("#pair").val();
     var tr = $(e).closest('tr').prev();
     var row = table.row(tr);
-    var config = row.data().Config;
+    var config = row.data().config;
     $("#modalTitle").text(pair + " Settings");
     $("#modalContent").html("<pre>" + JSON.stringify(config, null, 4) + "</pre>");
     $("#modal").modal('show');

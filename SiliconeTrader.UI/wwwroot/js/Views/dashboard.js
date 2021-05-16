@@ -2,7 +2,7 @@ var table = null;
 $(function () {
     table = $('#tradingPairsTable').DataTable({
         ajax: {
-            url: "Data/TradingPairs",
+            url: "Trades/TradingPairs",
             type: "POST",
             dataSrc: ""
         },
@@ -17,7 +17,7 @@ $(function () {
                 name: "Name",
                 data: "name",
                 render: function (data, type, row, meta) {
-                    return '<a href="https://www.tradingview.com/chart/?symbol=' + row.TradingViewName + '" target = "_blank" class="btn btn-outline-info btn-sm">' + data + '</a>';
+                    return '<a href="https://www.tradingview.com/chart/?symbol=' + row.tradingViewName + '" target = "_blank" class="btn btn-outline-info btn-sm">' + data + '</a>';
                 },
                 visible: false
             },
@@ -25,9 +25,9 @@ $(function () {
                 name: "FormattedName",
                 data: "name",
                 render: function (data, type, row, meta) {
-                    var element = '<div style="width: 120px"><a href="https://www.tradingview.com/chart/?symbol=' + row.TradingViewName + '" target = "_blank" class="btn btn-outline-info btn-sm">' + data + '</a>';
-                    if (row.DCA > 0) {
-                        element += '&nbsp;&nbsp;<span class="badge badge-primary" title="DCA level">' + row.DCA + '</span>';
+                    var element = '<div style="width: 120px"><a href="https://www.tradingview.com/chart/?symbol=' + row.tradingViewName + '" target = "_blank" class="btn btn-outline-info btn-sm">' + data + '</a>';
+                    if (row.dca > 0) {
+                        element += '&nbsp;&nbsp;<span class="badge badge-primary" title="DCA level">' + row.dca + '</span>';
                     }
                     element += '</div>';
                     return element;
@@ -49,10 +49,10 @@ $(function () {
                     else {
                         element = '<span class="text-warning"><strong>' + data + '</strong></span>';
                     }
-                    if (row.IsTrailingSell) {
+                    if (row.isTrailingSell) {
                         element += ' <i class="fas fa-bolt text-info" title="Trailing"></i>';
                     }
-                    if (row.IsTrailingBuy) {
+                    if (row.isTrailingBuy) {
                         element += ' <i class="fas fa-bolt text-primary" title="Trailing"></i>';
                     }
                     return element;
@@ -67,7 +67,7 @@ $(function () {
                 data: "currentRating",
                 render: function (data, type, row, meta) {
                     var element = "";
-                    if (parseFloat(data) >= parseFloat(row.BoughtRating)) {
+                    if (parseFloat(data) >= parseFloat(row.boughtRating)) {
                         element = '<span class="text-success">' + data + '</span>';
                     }
                     else {
@@ -203,22 +203,22 @@ function hideRow(row) {
 
 function format(data) {
     var details = $($("#rowDetails").html());
-    details.find("#pair").val(data.Name);
-    details.find("#amount").attr("value", data.Amount).attr("min", 0);
+    details.find("#pair").val(data.name);
+    details.find("#amount").attr("value", data.amount).attr("min", 0);
 
     var swapPairContainer = details.find("#swapPairContainer");
-    if (data.SwapPair) {
+    if (data.swapPair) {
         swapPairContainer.show();
-        details.find("#swapPair").text(data.SwapPair);
+        details.find("#swapPair").text(data.swapPair);
     } else {
         swapPairContainer.hide();
     }
 
-    details.find("#signalRule").text(data.SignalRule);
-    details.find("#tradingRules").text(data.TradingRules.join(", "));
-    details.find("#orderDates").text(data.OrderDates.join(", "));
-    details.find("#orderIds").text(data.OrderIds.join(", "));
-    details.find("#lastBuyMargin").text(data.LastBuyMargin);
+    details.find("#signalRule").text(data.signalRule);
+    details.find("#tradingRules").text(data.tradingRules.join(", "));
+    details.find("#orderDates").text(data.orderDates.join(", "));
+    details.find("#orderIds").text(data.orderIds.join(", "));
+    details.find("#lastBuyMargin").text(data.lastBuyMargin);
     return details.html();
 }
 
@@ -226,7 +226,7 @@ function showSettings(e) {
     var pair = $(e).closest(".row-details").find("#pair").val();
     var tr = $(e).closest('tr').prev();
     var row = table.row(tr);
-    var config = row.data().Config;
+    var config = row.data().config;
     $("#modalTitle").text(pair + " Settings");
     $("#modalContent").html("<pre>" + JSON.stringify(config, null, 4) + "</pre>");
     $("#modal").modal('show');

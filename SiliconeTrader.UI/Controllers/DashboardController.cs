@@ -21,7 +21,7 @@ namespace SiliconeTrader.UI.Controllers
 
         public IActionResult Index()
         {
-            return this.View("Dashboard");
+            return this.View();
         }
     }
 }

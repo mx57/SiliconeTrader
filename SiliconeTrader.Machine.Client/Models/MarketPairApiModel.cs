@@ -1,5 +1,4 @@
-﻿using SiliconeTrader.Core;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace SiliconeTrader.Machine.Client.Models
 {
@@ -14,7 +13,7 @@ namespace SiliconeTrader.Machine.Client.Models
     {
         public IEnumerable<ArbitrageInfo> ArbitrageList { get; set; }
 
-        public IPairConfig Config { get; set; }
+        public object Config { get; set; }
 
         public bool HasTradingPair { get; set; }
 
@@ -22,9 +21,11 @@ namespace SiliconeTrader.Machine.Client.Models
 
         public string Price { get; set; }
 
-        public IEnumerable<(string Name, double? RatingChange)> RatingChangeList { get; set; }
+        public IEnumerable<NameValue<decimal?>> PriceChangeList { get; set; }
 
-        public IEnumerable<(string Name, double? Rating)> RatingList { get; set; }
+        public IEnumerable<NameValue<double?>> RatingChangeList { get; set; }
+
+        public IEnumerable<NameValue<double?>> RatingList { get; set; }
 
         public IEnumerable<string> SignalRules { get; set; }
 
@@ -32,12 +33,23 @@ namespace SiliconeTrader.Machine.Client.Models
 
         public string TradingViewName { get; set; }
 
-        public IEnumerable<(string Name, double? Volatility)> VolatilityList { get; set; }
+        public IEnumerable<NameValue<double?>> VolatilityList { get; set; }
 
-        public IEnumerable<(string Name, double? VolumeChange)> VolumeChangeList { get; set; }
+        public IEnumerable<NameValue<double?>> VolumeChangeList { get; set; }
 
-        public IEnumerable<(string Name, long? Volume)> VolumeList { get; set; }
+        public IEnumerable<NameValue<long?>> VolumeList { get; set; }
+    }
 
-        public IEnumerable<(string Name, decimal? PriceChange)> PriceChangeList { get; set; }
+    public class NameValue<T>
+    {
+        public NameValue(string name, T value)
+        {
+            this.Name = name;
+            this.Value = value;
+        }
+
+        public string Name { get; set; }
+
+        public T Value { get; set; }
     }
 }

@@ -42,12 +42,7 @@ namespace SiliconeTrader.UI.Controllers
         {
             return this.View();
         }
-
-        public IActionResult SignalNames()
-        {
-            return this.View();
-        }
-
+         
         public IActionResult Stats()
         {
             return this.View();

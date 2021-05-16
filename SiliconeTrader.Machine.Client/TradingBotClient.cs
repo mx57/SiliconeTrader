@@ -1,4 +1,9 @@
-﻿using SiliconeTrader.Machine.Client.Core;
+﻿using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using SiliconeTrader.Machine.Client.Core;
+using SiliconeTrader.Machine.Client.Models;
 
 namespace SiliconeTrader.Machine.Client
 {
@@ -13,6 +18,48 @@ namespace SiliconeTrader.Machine.Client
         INotificationManager Notification { get; }
 
         ITradingManager Trading { get; }
+
+        IMarketManager Markets { get; }
+    }
+
+    public interface IMarketManager
+    {
+        Task<MarketPairsResponse> GetMarketPairs(MarketPairsRequest request, CancellationToken cancellationToken);
+        Task<MarketSignalsResponse> GetMarketSignals(CancellationToken cancellationToken);
+    }
+
+    internal class MarketsManager : BaseManager, IMarketManager
+    {
+        private MarketsManager(IRestClient restClient, IModelConverter modelConverter)
+            : base(restClient, modelConverter)
+        {
+        }
+
+        public static IMarketManager Create(IRestClient restClient, IModelConverter modelConverter)
+        {
+            return new MarketsManager(restClient, modelConverter);
+        }
+
+        public Task<MarketPairsResponse> GetMarketPairs(MarketPairsRequest request, CancellationToken cancellationToken)
+            => this.SendAsync<MarketPairsRequest, MarketPairsResponse>(request, HttpMethod.Post, "/api/ORCA/v1/market-pairs", cancellationToken);
+
+        public Task<MarketSignalsResponse> GetMarketSignals(CancellationToken cancellationToken)
+            => this.SendAsync<MarketSignalsResponse>(HttpMethod.Get, "/api/ORCA/v1/market-signals", cancellationToken);
+    }
+
+    public class MarketPairsRequest : BotRequest
+    {
+        public List<string> SignalsFilter { get; set; }
+    }
+
+    public class MarketSignalsResponse : BotResponse
+    {
+        public IEnumerable<string> Signals { get; set; }
+    }
+
+    public class MarketPairsResponse : BotResponse
+    {
+        public IEnumerable<MarketPairApiModel> MarketPairs { get; set; }
     }
 
     public class TradingBotClient : ITradingBotClient
@@ -22,6 +69,7 @@ namespace SiliconeTrader.Machine.Client
             this.Health = HealthManager.Create(restClient, modelConverter);
             this.Instance = InstanceManager.Create(restClient, modelConverter);
             this.Trading = TradingManager.Create(restClient, modelConverter);
+            this.Markets = MarketsManager.Create(restClient, modelConverter);
         }
 
         public IBacktestingManager Backtesting { get; }
@@ -33,5 +81,7 @@ namespace SiliconeTrader.Machine.Client
         public INotificationManager Notification { get; }
 
         public ITradingManager Trading { get; }
+
+        public IMarketManager Markets { get; }
     }
 }

@@ -23,16 +23,17 @@ namespace SiliconeTrader.UI.Controllers
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
+            // TODO: remove this bit of inefficient code.
             if (string.IsNullOrEmpty(DefaultViewModel.InstanceName))
             {
-                InstanceVersionResponse botInstance = await BotClient.Instance.GetVersionInfo(CancellationToken.None);
+                //InstanceVersionResponse botInstance = await BotClient.Instance.GetVersionInfo(CancellationToken.None);
 
                 DefaultViewModel = new DefaultViewModel
                 {
-                    InstanceName = botInstance.InstanceName,
-                    ReadOnlyMode = botInstance.ReadOnlyMode,
-                    Version = botInstance.Version,
-                    Error = botInstance.Error?.ErrorMessage
+                    InstanceName = "",// botInstance.InstanceName,
+                    ReadOnlyMode = true, //botInstance.ReadOnlyMode,
+                    Version = "1.1 B", //botInstance.Version,
+                    Error = "" //botInstance.Error?.ErrorMessage
                 };
             }
 
