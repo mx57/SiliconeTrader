@@ -30,7 +30,7 @@ namespace SiliconeTrader.Trading
 
         protected override void Run()
         {
-            ProcessAllRules();
+            this.ProcessAllRules();
         }
 
         public IPairConfig GetPairConfig(string pair)
@@ -38,10 +38,10 @@ namespace SiliconeTrader.Trading
             PairConfig pairConfig;
             if (!pairConfigs.TryGetValue(pair, out pairConfig))
             {
-                ProcessAllRules();
+                this.ProcessAllRules();
                 if (!pairConfigs.TryGetValue(pair, out pairConfig))
                 {
-                    return CreatePairConfig(pair, tradingService.Config.Clone(), new PairConfig(), new List<IRule>());
+                    return this.CreatePairConfig(pair, tradingService.Config.Clone(), new PairConfig(), new List<IRule>());
                 }
             }
             return pairConfig;
@@ -65,11 +65,11 @@ namespace SiliconeTrader.Trading
                     pairConfigs.TryGetValue(pair, out PairConfig oldPairConfig);
                     var appliedRules = new List<IRule>();
 
-                    foreach (var rule in enabledRules)
+                    foreach (IRule rule in enabledRules)
                     {
                         if (rulesService.CheckConditions(rule.Conditions, signals, globalRating, pair, tradingPair))
                         {
-                            var modifiers = rule.GetModifiers<TradingRuleModifiers>();
+                            TradingRuleModifiers modifiers = rule.GetModifiers<TradingRuleModifiers>();
                             if (modifiers != null)
                             {
                                 // Base Trading Config
@@ -136,7 +136,7 @@ namespace SiliconeTrader.Trading
                         }
                     }
 
-                    pairConfigs[pair] = CreatePairConfig(pair, modifiedTradingConfig, modifiedPairConfig, appliedRules);
+                    pairConfigs[pair] = this.CreatePairConfig(pair, modifiedTradingConfig, modifiedPairConfig, appliedRules);
                 }
             }
 
@@ -146,8 +146,8 @@ namespace SiliconeTrader.Trading
         private PairConfig CreatePairConfig(string pair, ITradingConfig modifiedTradingConfig, IPairConfig modifiedPairConfig, IEnumerable<IRule> appliedRules)
         {
             ITradingPair tradingPair = tradingService.Account.GetTradingPair(pair);
-            DCALevel currentDCALevel = GetCurrentDCALevel(tradingPair, modifiedTradingConfig.DCALevels);
-            DCALevel nextDCALevel = GetNextDCALevel(tradingPair, modifiedTradingConfig.DCALevels, modifiedTradingConfig.RepeatLastDCALevel);
+            DCALevel currentDCALevel = this.GetCurrentDCALevel(tradingPair, modifiedTradingConfig.DCALevels);
+            DCALevel nextDCALevel = this.GetNextDCALevel(tradingPair, modifiedTradingConfig.DCALevels, modifiedTradingConfig.RepeatLastDCALevel);
 
             return new PairConfig
             {

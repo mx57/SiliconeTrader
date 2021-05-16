@@ -38,9 +38,9 @@ namespace SiliconeTrader.Signals.TradingView
             loggingService.Info("Start TradingViewCryptoSignalReceiver...");
 
             tradingViewCryptoSignalPollingTimedTask = tasksService.AddTask(
-                name: $"{nameof(TradingViewCryptoSignalPollingTimedTask)} [{SignalName}]",
+                name: $"{nameof(TradingViewCryptoSignalPollingTimedTask)} [{this.SignalName}]",
                 task: new TradingViewCryptoSignalPollingTimedTask(loggingService, healthCheckService, tradingService, this),
-                interval: Config.PollingInterval * 1000 / Application.Speed,
+                interval: this.Config.PollingInterval * 1000 / Application.Speed,
                 startDelay: Constants.TaskDelays.ZeroDelay,
                 startTask: false,
                 runNow: true,
@@ -53,16 +53,16 @@ namespace SiliconeTrader.Signals.TradingView
         {
             loggingService.Info("Stop TradingViewCryptoSignalReceiver...");
 
-            tasksService.RemoveTask($"{nameof(TradingViewCryptoSignalPollingTimedTask)} [{SignalName}]", stopTask: true);
+            tasksService.RemoveTask($"{nameof(TradingViewCryptoSignalPollingTimedTask)} [{this.SignalName}]", stopTask: true);
 
-            healthCheckService.RemoveHealthCheck($"{Constants.HealthChecks.TradingViewCryptoSignalsReceived} [{SignalName}]");
+            healthCheckService.RemoveHealthCheck($"{Constants.HealthChecks.TradingViewCryptoSignalsReceived} [{this.SignalName}]");
 
             loggingService.Info("TradingViewCryptoSignalReceiver stopped");
         }
 
         public int GetPeriod()
         {
-            return Config.SignalPeriod;
+            return this.Config.SignalPeriod;
         }
 
         public IEnumerable<ISignal> GetSignals()

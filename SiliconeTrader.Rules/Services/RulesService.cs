@@ -10,7 +10,7 @@ namespace SiliconeTrader.Rules
     {
         public override string ServiceName => Constants.ServiceNames.RulesService;
 
-        IRulesConfig IRulesService.Config => Config;
+        IRulesConfig IRulesService.Config => this.Config;
 
         private readonly ILoggingService loggingService;
         private readonly ITradingService tradingService;
@@ -24,7 +24,7 @@ namespace SiliconeTrader.Rules
 
         public IModuleRules GetRules(string module)
         {
-            IModuleRules moduleRules = Config.Modules.FirstOrDefault(m => m.Module == module);
+            IModuleRules moduleRules = this.Config.Modules.FirstOrDefault(m => m.Module == module);
             if (moduleRules != null)
             {
                 return moduleRules;
@@ -39,7 +39,7 @@ namespace SiliconeTrader.Rules
         {
             if (conditions != null)
             {
-                foreach (var condition in conditions)
+                foreach (IRuleCondition condition in conditions)
                 {
                     ISignal signal = null;
                     if (condition.Signal != null && signals.TryGetValue(condition.Signal, out ISignal s))
@@ -109,7 +109,7 @@ namespace SiliconeTrader.Rules
 
         protected override void OnConfigReloaded()
         {
-            foreach (var callback in rulesChangeCallbacks)
+            foreach (Action callback in rulesChangeCallbacks)
             {
                 callback();
             }

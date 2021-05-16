@@ -72,7 +72,7 @@ namespace SiliconeTrader.Core
 
         public IEnumerable<IHealthCheck> GetHealthChecks()
         {
-            foreach (var kvp in healthChecks)
+            foreach (KeyValuePair<string, HealthCheck> kvp in healthChecks)
             {
                 yield return kvp.Value;
             }

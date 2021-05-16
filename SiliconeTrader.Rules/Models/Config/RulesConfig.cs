@@ -11,6 +11,6 @@ namespace SiliconeTrader.Rules
         /// Rule Modules
         /// </summary>
         public IEnumerable<ModuleRules> Modules { get; set; }
-        IEnumerable<IModuleRules> IRulesConfig.Modules => Modules;
+        IEnumerable<IModuleRules> IRulesConfig.Modules => this.Modules;
     }
 }

@@ -23,11 +23,11 @@ namespace SiliconeTrader.Rules
         /// Rules configuration
         /// </summary>
         public IEnumerable<Rule> Entries { get; set; }
-        IEnumerable<IRule> IModuleRules.Entries => Entries;
+        IEnumerable<IRule> IModuleRules.Entries => this.Entries;
 
         public T GetConfiguration<T>()
         {
-            return Configuration.Get<T>();
+            return this.Configuration.Get<T>();
         }
     }
 }

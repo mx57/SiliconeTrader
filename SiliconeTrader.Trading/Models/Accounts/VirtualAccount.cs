@@ -20,12 +20,12 @@ namespace SiliconeTrader.Trading
 
         public override void Refresh()
         {
-            lock (SyncRoot)
+            lock (this.SyncRoot)
             {
                 // Only done once, since all the data is always up to date
                 if (isInitialRefresh)
                 {
-                    Load();
+                    this.Load();
                     isInitialRefresh = false;
                 }
 
@@ -35,9 +35,9 @@ namespace SiliconeTrader.Trading
 
         public override void Save()
         {
-            lock (SyncRoot)
+            lock (this.SyncRoot)
             {
-                var tradingService = Application.Resolve<ITradingService>();
+                ITradingService tradingService = Application.Resolve<ITradingService>();
                 string virtualAccountFilePath = Path.Combine(Directory.GetCurrentDirectory(), tradingService.Config.VirtualAccountFilePath);
 
                 var data = new TradingAccountData
@@ -55,15 +55,15 @@ namespace SiliconeTrader.Trading
 
         public void Load()
         {
-            lock (SyncRoot)
+            lock (this.SyncRoot)
             {
-                var tradingService = Application.Resolve<ITradingService>();
-                var virtualAccountFilePath = Path.Combine(Directory.GetCurrentDirectory(), tradingService.Config.VirtualAccountFilePath);
+                ITradingService tradingService = Application.Resolve<ITradingService>();
+                string virtualAccountFilePath = Path.Combine(Directory.GetCurrentDirectory(), tradingService.Config.VirtualAccountFilePath);
 
                 if (File.Exists(virtualAccountFilePath))
                 {
                     string virtualAccountJson = File.ReadAllText(virtualAccountFilePath);
-                    var virtualAccountData = JsonConvert.DeserializeObject<TradingAccountData>(virtualAccountJson);
+                    TradingAccountData virtualAccountData = JsonConvert.DeserializeObject<TradingAccountData>(virtualAccountJson);
 
                     balance = virtualAccountData.Balance;
                     tradingPairs = virtualAccountData.TradingPairs;

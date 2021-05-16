@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Web;
 
-namespace SiliconeTrader.Machine.Client
+namespace SiliconeTrader.Machine.Client.Core
 {
     public class ModelConverter : IModelConverter
     {

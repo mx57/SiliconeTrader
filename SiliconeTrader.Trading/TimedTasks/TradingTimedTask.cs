@@ -33,7 +33,7 @@ namespace SiliconeTrader.Trading
 
         protected override void Run()
         {
-            ProcessTradingPairs();
+            this.ProcessTradingPairs();
         }
 
         public void InitiateBuy(BuyOptions options)
@@ -43,7 +43,7 @@ namespace SiliconeTrader.Trading
             {
                 if (!trailingBuys.ContainsKey(options.Pair))
                 {
-                    StopTrailingSell(options.Pair);
+                    this.StopTrailingSell(options.Pair);
                     decimal currentPrice = tradingService.GetPrice(options.Pair);
                     decimal currentMargin = 0;
 
@@ -60,7 +60,7 @@ namespace SiliconeTrader.Trading
 
                     if (trailingBuys.TryAdd(options.Pair, trailingInfo))
                     {
-                        if (LoggingEnabled)
+                        if (this.LoggingEnabled)
                         {
                             ITradingPair tradingPair = tradingService.Account.GetTradingPair(options.Pair);
                             loggingService.Info($"Start trailing buy {tradingPair?.FormattedName ?? options.Pair}. " +
@@ -84,7 +84,7 @@ namespace SiliconeTrader.Trading
                 {
                     if (!trailingSells.ContainsKey(options.Pair))
                     {
-                        StopTrailingBuy(options.Pair);
+                        this.StopTrailingBuy(options.Pair);
                         ITradingPair tradingPair = tradingService.Account.GetTradingPair(options.Pair);
                         tradingPair.SetCurrentValues(tradingService.GetPrice(options.Pair), tradingService.Exchange.GetPriceSpread(options.Pair));
 
@@ -102,7 +102,7 @@ namespace SiliconeTrader.Trading
 
                         if (trailingSells.TryAdd(options.Pair, trailingInfo))
                         {
-                            if (LoggingEnabled)
+                            if (this.LoggingEnabled)
                             {
                                 loggingService.Info($"Start trailing sell {tradingPair.FormattedName}. " +
                                     $"Price: {tradingPair.CurrentPrice:0.00000000}, Margin: {tradingPair.CurrentMargin:0.00}");
@@ -125,7 +125,7 @@ namespace SiliconeTrader.Trading
         {
             int traidingPairsCount = 0;
 
-            foreach (var tradingPair in tradingService.Account.GetTradingPairs())
+            foreach (ITradingPair tradingPair in tradingService.Account.GetTradingPairs())
             {
                 IPairConfig pairConfig = tradingService.GetPairConfig(tradingPair.Pair);
                 tradingPair.SetCurrentValues(tradingService.GetPrice(tradingPair.Pair), tradingService.Exchange.GetPriceSpread(tradingPair.Pair));
@@ -139,7 +139,7 @@ namespace SiliconeTrader.Trading
                     {
                         if (Math.Round(tradingPair.CurrentMargin, 1) != Math.Round(sellTrailingInfo.LastTrailingMargin, 1))
                         {
-                            if (LoggingEnabled)
+                            if (this.LoggingEnabled)
                             {
                                 loggingService.Info($"Continue trailing sell {tradingPair.FormattedName}. " +
                                     $"Price: {tradingPair.CurrentPrice:0.00000000}, Margin: {tradingPair.CurrentMargin:0.00}");
@@ -149,7 +149,7 @@ namespace SiliconeTrader.Trading
                         if (tradingPair.CurrentMargin <= sellTrailingInfo.TrailingStopMargin || tradingPair.CurrentMargin <
                             (sellTrailingInfo.BestTrailingMargin - sellTrailingInfo.Trailing))
                         {
-                            StopTrailingSell(tradingPair.Pair);
+                            this.StopTrailingSell(tradingPair.Pair);
 
                             if (tradingPair.CurrentMargin > 0 || sellTrailingInfo.SellMargin < 0)
                             {
@@ -159,7 +159,7 @@ namespace SiliconeTrader.Trading
                                 }
                                 else
                                 {
-                                    if (LoggingEnabled)
+                                    if (this.LoggingEnabled)
                                     {
                                         loggingService.Info($"Stop trailing sell {tradingPair.FormattedName}. Reason: stop margin reached");
                                     }
@@ -167,7 +167,7 @@ namespace SiliconeTrader.Trading
                             }
                             else
                             {
-                                if (LoggingEnabled)
+                                if (this.LoggingEnabled)
                                 {
                                     loggingService.Info($"Stop trailing sell {tradingPair.FormattedName}. Reason: negative margin");
                                 }
@@ -184,21 +184,21 @@ namespace SiliconeTrader.Trading
                     }
                     else
                     {
-                        StopTrailingSell(tradingPair.Pair);
+                        this.StopTrailingSell(tradingPair.Pair);
                     }
                 }
                 else
                 {
                     if (pairConfig.SellEnabled && tradingPair.CurrentMargin >= pairConfig.SellMargin)
                     {
-                        InitiateSell(new SellOptions(tradingPair.Pair));
+                        this.InitiateSell(new SellOptions(tradingPair.Pair));
                     }
                     else if (pairConfig.SellEnabled && pairConfig.SellStopLossEnabled &&
                         tradingPair.CurrentMargin <= pairConfig.SellStopLossMargin &&
                         tradingPair.CurrentAge >= pairConfig.SellStopLossMinAge &&
                         (pairConfig.NextDCAMargin == null || !pairConfig.SellStopLossAfterDCA))
                     {
-                        if (LoggingEnabled)
+                        if (this.LoggingEnabled)
                         {
                             loggingService.Info($"Stop loss triggered for {tradingPair.FormattedName}. Margin: {tradingPair.CurrentMargin:0.00}");
                         }
@@ -217,12 +217,12 @@ namespace SiliconeTrader.Trading
 
                             if (tradingService.CanBuy(buyOptions, message: out string message))
                             {
-                                if (LoggingEnabled)
+                                if (this.LoggingEnabled)
                                 {
                                     loggingService.Info($"DCA triggered for {tradingPair.FormattedName}. Margin: {tradingPair.CurrentMargin:0.00}, " +
                                         $"Level: {pairConfig.NextDCAMargin:0.00}, Multiplier: {pairConfig.BuyMultiplier}");
                                 }
-                                InitiateBuy(buyOptions);
+                                this.InitiateBuy(buyOptions);
                             }
                         }
                     }
@@ -231,7 +231,7 @@ namespace SiliconeTrader.Trading
                 traidingPairsCount++;
             }
 
-            foreach (var kvp in trailingBuys)
+            foreach (KeyValuePair<string, BuyTrailingInfo> kvp in trailingBuys)
             {
                 string pair = kvp.Key;
                 BuyTrailingInfo buyTrailingInfo = kvp.Value;
@@ -244,7 +244,7 @@ namespace SiliconeTrader.Trading
                 {
                     if (Math.Round(currentMargin, 1) != Math.Round(buyTrailingInfo.LastTrailingMargin, 1))
                     {
-                        if (LoggingEnabled)
+                        if (this.LoggingEnabled)
                         {
                             loggingService.Info($"Continue trailing buy {tradingPair?.FormattedName ?? pair}. Price: {currentPrice:0.00000000}, Margin: {currentMargin:0.00}");
                         }
@@ -252,7 +252,7 @@ namespace SiliconeTrader.Trading
 
                     if (currentMargin >= buyTrailingInfo.TrailingStopMargin || currentMargin > (buyTrailingInfo.BestTrailingMargin - buyTrailingInfo.Trailing))
                     {
-                        StopTrailingBuy(pair);
+                        this.StopTrailingBuy(pair);
 
                         if (buyTrailingInfo.TrailingStopAction == BuyTrailingStopAction.Buy || currentMargin < buyTrailingInfo.TrailingStopMargin)
                         {
@@ -260,7 +260,7 @@ namespace SiliconeTrader.Trading
                         }
                         else
                         {
-                            if (LoggingEnabled)
+                            if (this.LoggingEnabled)
                             {
                                 loggingService.Info($"Stop trailing buy {tradingPair?.FormattedName ?? pair}. Reason: stop margin reached");
                             }
@@ -277,7 +277,7 @@ namespace SiliconeTrader.Trading
                 }
                 else
                 {
-                    StopTrailingBuy(pair);
+                    this.StopTrailingBuy(pair);
                 }
             }
 

@@ -15,11 +15,11 @@ namespace SiliconeTrader.Core
         public List<DateTimeOffset> OrderDates { get; set; }
         public decimal AveragePrice { get; set; }
         public decimal Fees { get; set; }
-        public decimal FeesTotal => Fees + (Metadata?.FeesNonDeductible ?? 0);
-        public decimal Cost => AveragePrice * Amount;
+        public decimal FeesTotal => this.Fees + (this.Metadata?.FeesNonDeductible ?? 0);
+        public decimal Cost => this.AveragePrice * this.Amount;
         public DateTimeOffset SellDate { get; set; }
         public decimal SellPrice { get; set; }
-        public decimal SellCost => SellPrice * Amount;
+        public decimal SellCost => this.SellPrice * this.Amount;
         public decimal BalanceOffset { get; set; }
         public decimal Profit { get; set; }
         public OrderMetadata Metadata { get; set; }

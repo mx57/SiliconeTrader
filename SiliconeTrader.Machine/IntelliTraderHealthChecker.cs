@@ -12,9 +12,9 @@ namespace SiliconeTrader.Machine
     {
         public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
         {
-            var healthCheckService = Application.Resolve<IHealthCheckService>();
+            IHealthCheckService healthCheckService = Application.Resolve<IHealthCheckService>();
 
-            var checks = healthCheckService.GetHealthChecks();
+            IEnumerable<Core.IHealthCheck> checks = healthCheckService.GetHealthChecks();
             IReadOnlyDictionary<string, object> dic = checks.ToDictionary(x => x.Name, v => (object)v);
 
             if (checks.Any(x => x.Failed))

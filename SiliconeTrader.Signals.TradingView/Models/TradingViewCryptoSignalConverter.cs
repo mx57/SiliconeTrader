@@ -18,7 +18,7 @@ namespace SiliconeTrader.Signals.TradingView
             if (reader.TokenType == JsonToken.StartArray)
             {
                 var array = JArray.Load(reader);
-                var item = (existingValue as Signal ?? new Signal());
+                Signal item = (existingValue as Signal ?? new Signal());
                 item.Pair = (string)array.ElementAtOrDefault(0);
                 item.Price = (decimal?)array.ElementAtOrDefault(1);
                 item.PriceChange = (decimal?)array.ElementAtOrDefault(2);

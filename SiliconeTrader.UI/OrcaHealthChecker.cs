@@ -10,7 +10,7 @@ namespace SiliconeTrader.UI
     {
         public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
         {
-            var orcaBase = Environment.GetEnvironmentVariable("ORCA_API_URL");
+            string orcaBase = Environment.GetEnvironmentVariable("ORCA_API_URL");
             var httpClient = new HttpClient
             {
                 BaseAddress = new Uri(orcaBase)
@@ -18,7 +18,7 @@ namespace SiliconeTrader.UI
 
             try
             {
-                var response = await httpClient.GetStringAsync("api/ORCA/v1/status");
+                string response = await httpClient.GetStringAsync("api/ORCA/v1/status");
 
                 return HealthCheckResult.Healthy(orcaBase + " | " + response);
             }

@@ -10,7 +10,7 @@ namespace SiliconeTrader.Signals.Base
         /// </summary>
         public IEnumerable<SignalDefinition> Definitions { get; set; }
 
-        IEnumerable<ISignalDefinition> ISignalsConfig.Definitions => Definitions;
+        IEnumerable<ISignalDefinition> ISignalsConfig.Definitions => this.Definitions;
 
         /// <summary>
         /// Enable / disable signals

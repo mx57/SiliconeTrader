@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace SiliconeTrader.Machine.Client
+namespace SiliconeTrader.Machine.Client.Core
 {
     public class ErrorResponse
     {

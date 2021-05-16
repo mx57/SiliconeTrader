@@ -1,12 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using SiliconeTrader.Core;
-using SiliconeTrader.Machine.Client.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using SiliconeTrader.Core;
+using SiliconeTrader.Machine.Client.Core;
+using SiliconeTrader.Machine.Client.Models;
 
 namespace SiliconeTrader.Machine.Controllers
 {
@@ -14,6 +15,7 @@ namespace SiliconeTrader.Machine.Controllers
     [ApiController]
     public class OrcaApiController : ControllerBase
     {
+        #region Buy
         [HttpPost("buy/{pair}/{amount}")]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
@@ -32,7 +34,7 @@ namespace SiliconeTrader.Machine.Controllers
 
             if (!string.IsNullOrWhiteSpace(pair) && buyAmount > 0)
             {
-                var tradingService = Application.Resolve<ITradingService>();
+                ITradingService tradingService = Application.Resolve<ITradingService>();
 
                 tradingService.Buy(new BuyOptions(pair)
                 {
@@ -47,14 +49,18 @@ namespace SiliconeTrader.Machine.Controllers
             return new BadRequestResult();
         }
 
-        [HttpPost("buy-default")]
-        public IActionResult BuyDefault()
+        [HttpPost("buy-default/{pair}")]
+        public IActionResult BuyDefault(string pair)
         {
-            string pair = Request.Form["pair"].ToString();
-            if (!Application.Resolve<ICoreService>().Config.ReadOnlyMode && !string.IsNullOrWhiteSpace(pair))
+            if (Application.Resolve<ICoreService>().Config.ReadOnlyMode)
             {
-                var signalsService = Application.Resolve<ISignalsService>();
-                var tradingService = Application.Resolve<ITradingService>();
+                return new BadRequestResult();
+            }
+
+            if (!string.IsNullOrWhiteSpace(pair))
+            {
+                ISignalsService signalsService = Application.Resolve<ISignalsService>();
+                ITradingService tradingService = Application.Resolve<ITradingService>();
                 tradingService.Buy(new BuyOptions(pair)
                 {
                     MaxCost = tradingService.GetPairConfig(pair).BuyMaxCost,
@@ -73,47 +79,18 @@ namespace SiliconeTrader.Machine.Controllers
             }
         }
 
+        #endregion
 
-        [HttpGet("log")]
-        public LogViewModel Log()
-        {
-            var coreService = Application.Resolve<ICoreService>();
 
-            var loggingService = Application.Resolve<ILoggingService>();
-
-            var model = new LogViewModel()
-            {
-                InstanceName = coreService.Config.InstanceName,
-                Version = coreService.Version,
-                ReadOnlyMode = coreService.Config.ReadOnlyMode,
-                LogEntries = loggingService.GetLogEntries().Reverse().Take(500)
-            };
-
-            return model;
-        }
-
-        [HttpGet("market")]
-        public MarketViewModel Market()
-        {
-            var coreService = Application.Resolve<ICoreService>();
-
-            var model = new MarketViewModel
-            {
-                InstanceName = coreService.Config.InstanceName,
-                Version = coreService.Version,
-                ReadOnlyMode = coreService.Config.ReadOnlyMode
-            };
-            return model;
-        }
-
+        #region Markets
         [HttpPost("market-pairs")]
         public IEnumerable<MarketPairApiModel> MarketPairs(List<string> signalsFilter)
         {
-            var coreService = Application.Resolve<ICoreService>();
-            var tradingService = Application.Resolve<ITradingService>();
-            var signalsService = Application.Resolve<ISignalsService>();
+            ICoreService coreService = Application.Resolve<ICoreService>();
+            ITradingService tradingService = Application.Resolve<ITradingService>();
+            ISignalsService signalsService = Application.Resolve<ISignalsService>();
 
-            var allSignals = signalsService.GetAllSignals();
+            IEnumerable<ISignal> allSignals = signalsService.GetAllSignals();
             if (allSignals != null)
             {
                 if (signalsFilter.Count > 0)
@@ -123,32 +100,32 @@ namespace SiliconeTrader.Machine.Controllers
 
                 var groupedSignals = allSignals.GroupBy(s => s.Pair).ToDictionary(g => g.Key, g => g.AsEnumerable());
 
-                var marketPairs = from signalGroup in groupedSignals
-                                  let pair = signalGroup.Key
-                                  let pairConfig = tradingService.GetPairConfig(pair)
-                                  select new MarketPairApiModel
-                                  {
-                                      Name = pair,
-                                      TradingViewName = $"{tradingService.Config.Exchange.ToUpperInvariant()}:{pair}",
-                                      VolumeList = signalGroup.Value.Select(s => (s.Name, s.Volume)),
-                                      VolumeChangeList = signalGroup.Value.Select(s => (s.Name, s.VolumeChange)),
-                                      Price = tradingService.GetPrice(pair).ToString("0.00000000"),
-                                      PriceChangeList = signalGroup.Value.Select(s => (s.Name, s.PriceChange)),
-                                      RatingList = signalGroup.Value.Select(s => (s.Name, s.Rating)),
-                                      RatingChangeList = signalGroup.Value.Select(s => (s.Name, s.RatingChange)),
-                                      VolatilityList = signalGroup.Value.Select(s => (s.Name, s.Volatility)),
-                                      Spread = tradingService.Exchange.GetPriceSpread(pair).ToString("0.00"),
-                                      ArbitrageList = from market in Enum.GetNames(typeof(ArbitrageMarket)).Where(m => m != tradingService.Config.Market)
-                                                      let arbitrage = tradingService.Exchange.GetArbitrage(pair, tradingService.Config.Market, new List<ArbitrageMarket> { Enum.Parse<ArbitrageMarket>(market) })
-                                                      select new ArbitrageInfo
-                                                      {
-                                                          Name = $"{arbitrage.Market}-{arbitrage.Type.ToString()[0]}",
-                                                          Arbitrage = arbitrage.IsAssigned ? arbitrage.Percentage.ToString("0.00") : "N/A"
-                                                      },
-                                      SignalRules = signalsService.GetTrailingInfo(pair)?.Select(ti => ti.Rule.Name) ?? Array.Empty<string>(),
-                                      HasTradingPair = tradingService.Account.HasTradingPair(pair),
-                                      Config = pairConfig
-                                  };
+                IEnumerable<MarketPairApiModel> marketPairs = from signalGroup in groupedSignals
+                                                              let pair = signalGroup.Key
+                                                              let pairConfig = tradingService.GetPairConfig(pair)
+                                                              select new MarketPairApiModel
+                                                              {
+                                                                  Name = pair,
+                                                                  TradingViewName = $"{tradingService.Config.Exchange.ToUpperInvariant()}:{pair}",
+                                                                  VolumeList = signalGroup.Value.Select(s => (s.Name, s.Volume)),
+                                                                  VolumeChangeList = signalGroup.Value.Select(s => (s.Name, s.VolumeChange)),
+                                                                  Price = tradingService.GetPrice(pair).ToString("0.00000000"),
+                                                                  PriceChangeList = signalGroup.Value.Select(s => (s.Name, s.PriceChange)),
+                                                                  RatingList = signalGroup.Value.Select(s => (s.Name, s.Rating)),
+                                                                  RatingChangeList = signalGroup.Value.Select(s => (s.Name, s.RatingChange)),
+                                                                  VolatilityList = signalGroup.Value.Select(s => (s.Name, s.Volatility)),
+                                                                  Spread = tradingService.Exchange.GetPriceSpread(pair).ToString("0.00"),
+                                                                  ArbitrageList = from market in Enum.GetNames(typeof(ArbitrageMarket)).Where(m => m != tradingService.Config.Market)
+                                                                                  let arbitrage = tradingService.Exchange.GetArbitrage(pair, tradingService.Config.Market, new List<ArbitrageMarket> { Enum.Parse<ArbitrageMarket>(market) })
+                                                                                  select new ArbitrageInfo
+                                                                                  {
+                                                                                      Name = $"{arbitrage.Market}-{arbitrage.Type.ToString()[0]}",
+                                                                                      Arbitrage = arbitrage.IsAssigned ? arbitrage.Percentage.ToString("0.00") : "N/A"
+                                                                                  },
+                                                                  SignalRules = signalsService.GetTrailingInfo(pair)?.Select(ti => ti.Rule.Name) ?? Array.Empty<string>(),
+                                                                  HasTradingPair = tradingService.Account.HasTradingPair(pair),
+                                                                  Config = pairConfig
+                                                              };
 
                 return marketPairs.ToList();
             }
@@ -158,28 +135,24 @@ namespace SiliconeTrader.Machine.Controllers
             }
         }
 
+        [HttpGet("signals")]
+        public IEnumerable<string> SignalNames()
+        {
+            ISignalsService signalsService = Application.Resolve<ISignalsService>();
+
+            return signalsService.GetSignalNames();
+        }
+
+        #endregion
+
+        #region System
         [HttpGet("account/refresh")]
         public IActionResult RefreshAccount()
         {
             if (!Application.Resolve<ICoreService>().Config.ReadOnlyMode)
             {
-                var tradingService = Application.Resolve<ITradingService>();
+                ITradingService tradingService = Application.Resolve<ITradingService>();
                 tradingService.Account.Refresh();
-                return new OkResult();
-            }
-            else
-            {
-                return new BadRequestResult();
-            }
-        }
-
-        [HttpGet("services/restart")]
-        public IActionResult RestartServices()
-        {
-            if (!Application.Resolve<ICoreService>().Config.ReadOnlyMode)
-            {
-                var coreService = Application.Resolve<ICoreService>();
-                coreService.Restart();
                 return new OkResult();
             }
             else
@@ -191,13 +164,13 @@ namespace SiliconeTrader.Machine.Controllers
         [HttpGet("rules")]
         public RulesViewModel Rules()
         {
-            var allTades = GetTrades();
+            Dictionary<DateTimeOffset, List<TradeResult>> allTades = this.GetTrades();
             var signalRuleStats = new Dictionary<string, SignalRuleStats>();
-            foreach (var trade in allTades.Values.SelectMany(t => t))
+            foreach (TradeResult trade in allTades.Values.SelectMany(t => t))
             {
                 if (trade.IsSuccessful)
                 {
-                    var signalRule = trade?.Metadata?.SignalRule;
+                    string signalRule = trade?.Metadata?.SignalRule;
                     if (!string.IsNullOrWhiteSpace(signalRule))
                     {
                         if (!signalRuleStats.TryGetValue(signalRule, out SignalRuleStats ruleStats))
@@ -234,7 +207,7 @@ namespace SiliconeTrader.Machine.Controllers
                 }
             }
 
-            var coreService = Application.Resolve<ICoreService>();
+            ICoreService coreService = Application.Resolve<ICoreService>();
 
             var model = new RulesViewModel
             {
@@ -247,11 +220,56 @@ namespace SiliconeTrader.Machine.Controllers
             return model;
         }
 
-        [HttpPost("config/save")]
-        public IActionResult SaveConfig()
+        [HttpGet("instance")]
+        public MarketViewModel Instance()
         {
-            string configName = Request.Form["name"].ToString();
-            string configDefinition = Request.Form["definition"].ToString();
+            ICoreService coreService = Application.Resolve<ICoreService>();
+
+            var model = new MarketViewModel
+            {
+                InstanceName = coreService.Config.InstanceName,
+                Version = coreService.Version,
+                ReadOnlyMode = coreService.Config.ReadOnlyMode
+            };
+
+            return model;
+        }
+
+        [HttpGet("log")]
+        public LogViewModel Log()
+        {
+            ICoreService coreService = Application.Resolve<ICoreService>();
+
+            ILoggingService loggingService = Application.Resolve<ILoggingService>();
+
+            var model = new LogViewModel()
+            {
+                InstanceName = coreService.Config.InstanceName,
+                Version = coreService.Version,
+                ReadOnlyMode = coreService.Config.ReadOnlyMode,
+                LogEntries = loggingService.GetLogEntries().Reverse().Take(500)
+            };
+
+            return model;
+        }
+        [HttpGet("services/restart")]
+        public IActionResult RestartServices()
+        {
+            if (!Application.Resolve<ICoreService>().Config.ReadOnlyMode)
+            {
+                ICoreService coreService = Application.Resolve<ICoreService>();
+                coreService.Restart();
+                return new OkResult();
+            }
+            else
+            {
+                return new BadRequestResult();
+            }
+        }
+
+        [HttpPost("config/{configName}/save")]
+        public IActionResult SaveConfig(string configName, [FromBody] string configDefinition)
+        {
 
             if (!Application.Resolve<ICoreService>().Config.ReadOnlyMode && !string.IsNullOrWhiteSpace(configName) && !string.IsNullOrWhiteSpace(configDefinition))
             {
@@ -264,33 +282,50 @@ namespace SiliconeTrader.Machine.Controllers
             }
         }
 
-        [HttpPost("sell")]
-        public IActionResult Sell()
+        #endregion
+        #region Sell
+        [HttpPost("sell/{pair}/{amount}")]
+        [ProducesResponseType(201)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(422)]
+        public IActionResult Sell(string pair, string amount)
         {
-            string pair = Request.Form["pair"].ToString();
-            if (!Application.Resolve<ICoreService>().Config.ReadOnlyMode && pair != null && decimal.TryParse(Request.Form["amount"], out decimal amount) && amount > 0)
-            {
-                var tradingService = Application.Resolve<ITradingService>();
-                tradingService.Sell(new SellOptions(pair)
-                {
-                    Amount = amount,
-                    ManualOrder = true
-                });
-                return new OkResult();
-            }
-            else
+            if (Application.Resolve<ICoreService>().Config.ReadOnlyMode)
             {
                 return new BadRequestResult();
             }
+
+            if (!decimal.TryParse(amount, out decimal sellAmount))
+            {
+                return new BadRequestResult();
+            }
+
+            if (!string.IsNullOrWhiteSpace(pair) && sellAmount > 0)
+            {
+                ITradingService tradingService = Application.Resolve<ITradingService>();
+
+                tradingService.Sell(new SellOptions(pair)
+                {
+                    Amount = sellAmount,
+                    ManualOrder = true
+                });
+
+                return new OkResult();
+            }
+
+            return new BadRequestResult();
         }
+
+        #endregion
+        #region Settings
 
         [HttpGet("settings")]
         public SettingsViewModel Settings()
         {
-            var coreService = Application.Resolve<ICoreService>();
+            ICoreService coreService = Application.Resolve<ICoreService>();
 
-            var tradingService = Application.Resolve<ITradingService>();
-            var allConfigurableServices = Application.Resolve<IEnumerable<IConfigurableService>>();
+            ITradingService tradingService = Application.Resolve<ITradingService>();
+            IEnumerable<IConfigurableService> allConfigurableServices = Application.Resolve<IEnumerable<IConfigurableService>>();
 
             var model = new SettingsViewModel()
             {
@@ -313,8 +348,8 @@ namespace SiliconeTrader.Machine.Controllers
         {
             if (!Application.Resolve<ICoreService>().Config.ReadOnlyMode)
             {
-                var coreService = Application.Resolve<ICoreService>();
-                var tradingService = Application.Resolve<ITradingService>();
+                ICoreService coreService = Application.Resolve<ICoreService>();
+                ITradingService tradingService = Application.Resolve<ITradingService>();
 
                 coreService.Config.HealthCheckEnabled = model.HealthCheckEnabled;
                 tradingService.Config.BuyEnabled = model.BuyEnabled;
@@ -329,30 +364,26 @@ namespace SiliconeTrader.Machine.Controllers
                 {
                     tradingService.ResumeTrading();
                 }
-                return Settings();
+                return this.Settings();
             }
             else
             {
-                return Settings();
+                return this.Settings();
             }
         }
 
-        [HttpGet("signals")]
-        public IEnumerable<string> SignalNames()
-        {
-            var signalsService = Application.Resolve<ISignalsService>();
+        #endregion
 
-            return signalsService.GetSignalNames();
-        }
+        #region Stats
 
         [HttpGet("stats")]
         public StatsViewModel Stats()
         {
-            var coreService = Application.Resolve<ICoreService>();
+            ICoreService coreService = Application.Resolve<ICoreService>();
 
-            var tradingService = Application.Resolve<ITradingService>();
-            var accountInitialBalance = tradingService.Config.VirtualTrading ? tradingService.Config.VirtualAccountInitialBalance : tradingService.Config.AccountInitialBalance;
-            var accountInitialBalanceDate = tradingService.Config.VirtualTrading ? DateTimeOffset.Now.AddDays(-30) : tradingService.Config.AccountInitialBalanceDate;
+            ITradingService tradingService = Application.Resolve<ITradingService>();
+            decimal accountInitialBalance = tradingService.Config.VirtualTrading ? tradingService.Config.VirtualAccountInitialBalance : tradingService.Config.AccountInitialBalance;
+            DateTimeOffset accountInitialBalanceDate = tradingService.Config.VirtualTrading ? DateTimeOffset.Now.AddDays(-30) : tradingService.Config.AccountInitialBalanceDate;
 
             var model = new StatsViewModel
             {
@@ -364,13 +395,13 @@ namespace SiliconeTrader.Machine.Controllers
                 AccountBalance = tradingService.Account.GetTotalBalance(),
                 Market = tradingService.Config.Market,
                 Balances = new Dictionary<DateTimeOffset, decimal>(),
-                Trades = GetTrades()
+                Trades = this.GetTrades()
             };
 
-            foreach (var kvp in model.Trades.OrderBy(k => k.Key))
+            foreach (KeyValuePair<DateTimeOffset, List<TradeResult>> kvp in model.Trades.OrderBy(k => k.Key))
             {
-                var date = kvp.Key;
-                var trades = kvp.Value;
+                DateTimeOffset date = kvp.Key;
+                List<TradeResult> trades = kvp.Value;
 
                 model.Balances[date] = accountInitialBalance;
 
@@ -378,7 +409,7 @@ namespace SiliconeTrader.Machine.Controllers
                 {
                     for (int d = 1; d < (int)(date - accountInitialBalanceDate.Date).TotalDays; d++)
                     {
-                        var prevDate = date.AddDays(-d);
+                        DateTimeOffset prevDate = date.AddDays(-d);
                         if (model.Trades.ContainsKey(prevDate))
                         {
                             model.Balances[date] += model.Trades[prevDate].Where(t => !t.IsSwap).Sum(t => t.Profit);
@@ -393,10 +424,10 @@ namespace SiliconeTrader.Machine.Controllers
         [HttpGet("status")]
         public StatusApiModel Status()
         {
-            var loggingService = Application.Resolve<ILoggingService>();
-            var tradingService = Application.Resolve<ITradingService>();
-            var signalsService = Application.Resolve<ISignalsService>();
-            var healthCheckService = Application.Resolve<IHealthCheckService>();
+            ILoggingService loggingService = Application.Resolve<ILoggingService>();
+            ITradingService tradingService = Application.Resolve<ITradingService>();
+            ISignalsService signalsService = Application.Resolve<ISignalsService>();
+            IHealthCheckService healthCheckService = Application.Resolve<IHealthCheckService>();
 
             var status = new StatusApiModel
             {
@@ -412,14 +443,21 @@ namespace SiliconeTrader.Machine.Controllers
             return status;
         }
 
-        [HttpPost("swap")]
-        public IActionResult Swap()
+        [HttpGet("version")]
+        public string Version()
         {
-            string pair = Request.Form["pair"].ToString();
-            string swap = Request.Form["swap"].ToString();
+            return Application.Resolve<ICoreService>().Version;
+        }
+
+        #endregion
+
+        #region Trading
+        [HttpPost("{pair}/swap/{swap}")]
+        public IActionResult Swap(string pair, string swap)
+        {
             if (!Application.Resolve<ICoreService>().Config.ReadOnlyMode && !string.IsNullOrWhiteSpace(pair) && !string.IsNullOrWhiteSpace(swap))
             {
-                var tradingService = Application.Resolve<ITradingService>();
+                ITradingService tradingService = Application.Resolve<ITradingService>();
                 tradingService.Swap(new SwapOptions(pair, swap, new OrderMetadata())
                 {
                     ManualOrder = true
@@ -435,7 +473,7 @@ namespace SiliconeTrader.Machine.Controllers
         [HttpGet("trades/{id}")]
         public TradesViewModel Trades(DateTimeOffset id)
         {
-            var coreService = Application.Resolve<ICoreService>();
+            ICoreService coreService = Application.Resolve<ICoreService>();
 
             var model = new TradesViewModel()
             {
@@ -444,75 +482,72 @@ namespace SiliconeTrader.Machine.Controllers
                 ReadOnlyMode = coreService.Config.ReadOnlyMode,
                 TimezoneOffset = coreService.Config.TimezoneOffset,
                 Date = id,
-                Trades = GetTrades(id).Values.FirstOrDefault() ?? new List<TradeResult>()
+                Trades = this.GetTrades(id).Values.FirstOrDefault() ?? new List<TradeResult>()
             };
 
             return model;
         }
 
-        [HttpPost("trading-pairs")]
-        public IEnumerable<TradingPairApiModel> TradingPairs()
+        [HttpGet("trading-pairs")]
+        public TradingPairResponse TradingPairs()
         {
-            var coreService = Application.Resolve<ICoreService>();
-            var tradingService = Application.Resolve<ITradingService>();
+            ICoreService coreService = Application.Resolve<ICoreService>();
+            ITradingService tradingService = Application.Resolve<ITradingService>();
 
-            var tradingPairs = from tradingPair in tradingService.Account.GetTradingPairs()
-                               let pairConfig = tradingService.GetPairConfig(tradingPair.Pair)
-                               select new TradingPairApiModel
-                               {
-                                   Name = tradingPair.Pair,
-                                   DCA = tradingPair.DCALevel,
-                                   TradingViewName = $"{tradingService.Config.Exchange.ToUpperInvariant()}:{tradingPair.Pair}",
-                                   Margin = tradingPair.CurrentMargin.ToString("0.00"),
-                                   Target = pairConfig.SellMargin.ToString("0.00"),
-                                   CurrentPrice = tradingPair.CurrentPrice.ToString("0.00000000"),
-                                   CurrentSpread = tradingPair.CurrentSpread.ToString("0.00"),
-                                   BoughtPrice = tradingPair.AveragePrice.ToString("0.00000000"),
-                                   Cost = tradingPair.Cost.ToString("0.00000000"),
-                                   CurrentCost = tradingPair.CurrentCost.ToString("0.00000000"),
-                                   Amount = tradingPair.Amount.ToString("0.########"),
-                                   OrderDates = tradingPair.OrderDates.Select(d => d.ToOffset(TimeSpan.FromHours(coreService.Config.TimezoneOffset)).ToString("yyyy-MM-dd HH:mm:ss")),
-                                   OrderIds = tradingPair.OrderIds,
-                                   Age = tradingPair.CurrentAge.ToString("0.00"),
-                                   CurrentRating = tradingPair.Metadata.CurrentRating?.ToString("0.000") ?? "N/A",
-                                   BoughtRating = tradingPair.Metadata.BoughtRating?.ToString("0.000") ?? "N/A",
-                                   SignalRule = tradingPair.Metadata.SignalRule ?? "N/A",
-                                   SwapPair = tradingPair.Metadata.SwapPair,
-                                   TradingRules = pairConfig.Rules,
-                                   IsTrailingSell = tradingService.GetTrailingSells().Contains(tradingPair.Pair),
-                                   IsTrailingBuy = tradingService.GetTrailingBuys().Contains(tradingPair.Pair),
-                                   LastBuyMargin = tradingPair.Metadata.LastBuyMargin?.ToString("0.00") ?? "N/A",
-                                   Config = pairConfig
-                               };
+            IEnumerable<TradingPairApiModel> tradingPairs = from tradingPair in tradingService.Account.GetTradingPairs()
+                                                            let pairConfig = tradingService.GetPairConfig(tradingPair.Pair)
+                                                            select new TradingPairApiModel
+                                                            {
+                                                                Name = tradingPair.Pair,
+                                                                DCA = tradingPair.DCALevel,
+                                                                TradingViewName = $"{tradingService.Config.Exchange.ToUpperInvariant()}:{tradingPair.Pair}",
+                                                                Margin = tradingPair.CurrentMargin.ToString("0.00"),
+                                                                Target = pairConfig.SellMargin.ToString("0.00"),
+                                                                CurrentPrice = tradingPair.CurrentPrice.ToString("0.00000000"),
+                                                                CurrentSpread = tradingPair.CurrentSpread.ToString("0.00"),
+                                                                BoughtPrice = tradingPair.AveragePrice.ToString("0.00000000"),
+                                                                Cost = tradingPair.Cost.ToString("0.00000000"),
+                                                                CurrentCost = tradingPair.CurrentCost.ToString("0.00000000"),
+                                                                Amount = tradingPair.Amount.ToString("0.########"),
+                                                                OrderDates = tradingPair.OrderDates.Select(d => d.ToOffset(TimeSpan.FromHours(coreService.Config.TimezoneOffset)).ToString("yyyy-MM-dd HH:mm:ss")),
+                                                                OrderIds = tradingPair.OrderIds,
+                                                                Age = tradingPair.CurrentAge.ToString("0.00"),
+                                                                CurrentRating = tradingPair.Metadata.CurrentRating?.ToString("0.000") ?? "N/A",
+                                                                BoughtRating = tradingPair.Metadata.BoughtRating?.ToString("0.000") ?? "N/A",
+                                                                SignalRule = tradingPair.Metadata.SignalRule ?? "N/A",
+                                                                SwapPair = tradingPair.Metadata.SwapPair,
+                                                                TradingRules = pairConfig.Rules,
+                                                                IsTrailingSell = tradingService.GetTrailingSells().Contains(tradingPair.Pair),
+                                                                IsTrailingBuy = tradingService.GetTrailingBuys().Contains(tradingPair.Pair),
+                                                                LastBuyMargin = tradingPair.Metadata.LastBuyMargin?.ToString("0.00") ?? "N/A",
+                                                                Config = pairConfig
+                                                            };
 
-            return tradingPairs.ToList();
-        }
-
-        [HttpGet("version")]
-        public string Version()
-        {
-            return Application.Resolve<ICoreService>().Version;
+            return new TradingPairResponse
+            {
+                TradingPairs = tradingPairs.ToList()
+            };
         }
 
         private Dictionary<DateTimeOffset, List<TradeResult>> GetTrades(DateTimeOffset? date = null)
         {
-            var coreService = Application.Resolve<ICoreService>();
-            var logsPath = Path.Combine(Directory.GetCurrentDirectory(), "log");
+            ICoreService coreService = Application.Resolve<ICoreService>();
+            string logsPath = Path.Combine(Directory.GetCurrentDirectory(), "log");
             var tradeResultPattern = new Regex($"{nameof(TradeResult)} (?<data>\\{{.*\\}})", RegexOptions.Compiled);
             var trades = new Dictionary<DateTimeOffset, List<TradeResult>>();
 
             if (Directory.Exists(logsPath))
             {
-                foreach (var tradesLogFilePath in Directory.EnumerateFiles(logsPath, "*-trades.txt", SearchOption.TopDirectoryOnly))
+                foreach (string tradesLogFilePath in Directory.EnumerateFiles(logsPath, "*-trades.txt", SearchOption.TopDirectoryOnly))
                 {
                     IEnumerable<string> logLines = Misc.Utils.ReadAllLinesWriteSafe(tradesLogFilePath);
-                    foreach (var logLine in logLines)
+                    foreach (string logLine in logLines)
                     {
-                        var match = tradeResultPattern.Match(logLine);
+                        Match match = tradeResultPattern.Match(logLine);
                         if (match.Success)
                         {
-                            var data = match.Groups["data"].ToString();
-                            var json = Misc.Utils.FixInvalidJson(data.Replace(nameof(OrderMetadata), ""))
+                            string data = match.Groups["data"].ToString();
+                            string json = Misc.Utils.FixInvalidJson(data.Replace(nameof(OrderMetadata), ""))
                                 .Replace("AveragePricePaid", nameof(ITradeResult.AveragePrice)); // Old property migration
 
                             TradeResult tradeResult = JsonConvert.DeserializeObject<TradeResult>(json);
@@ -534,5 +569,8 @@ namespace SiliconeTrader.Machine.Controllers
             }
             return trades;
         }
+
+        #endregion
+
     }
 }

@@ -8,9 +8,9 @@ namespace SiliconeTrader.Keys
     {
         private static void EncryptKeys(Dictionary<string, string> args)
         {
-            var path = args["path"];
-            var publicKey = args["publickey"];
-            var privateKey = args["privatekey"];
+            string path = args["path"];
+            string publicKey = args["publickey"];
+            string privateKey = args["privatekey"];
 
             CryptoUtility.SaveUnprotectedStringsToFile(path, new string[] { publicKey, privateKey });
             Console.WriteLine("All done! Press any key to exit...");
@@ -19,7 +19,7 @@ namespace SiliconeTrader.Keys
 
         private static void Main(string[] args)
         {
-            var parsedArgs = ParseCommandLineArgs(args);
+            Dictionary<string, string> parsedArgs = ParseCommandLineArgs(args);
 
             PringWelcome();
 
@@ -49,7 +49,7 @@ namespace SiliconeTrader.Keys
 
         private static void PringWelcome()
         {
-            var foregroundColorBackup = Console.ForegroundColor;
+            ConsoleColor foregroundColorBackup = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine();
             Console.WriteLine(@"  _____         _          _  _  _  _____                   _             ");

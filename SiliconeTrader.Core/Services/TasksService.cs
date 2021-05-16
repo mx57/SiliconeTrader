@@ -54,7 +54,7 @@ namespace SiliconeTrader.Core
 
         public void StartAllTasks()
         {
-            foreach (var task in tasks.Values)
+            foreach (ITimedTask task in tasks.Values)
             {
                 task.Start();
             }
@@ -62,7 +62,7 @@ namespace SiliconeTrader.Core
 
         public void StopAllTasks()
         {
-            foreach (var task in tasks.Values)
+            foreach (ITimedTask task in tasks.Values)
             {
                 task.Stop();
             }
@@ -71,9 +71,9 @@ namespace SiliconeTrader.Core
 
         public void RemoveAllTasks()
         {
-            foreach (var taskName in tasks.Keys)
+            foreach (string taskName in tasks.Keys)
             {
-                RemoveTask(taskName);
+                this.RemoveTask(taskName);
             }
             syncStopSwatch.Reset();
         }
@@ -92,7 +92,7 @@ namespace SiliconeTrader.Core
 
         public T GetTask<T>(string name)
         {
-            return (T)GetTask(name);
+            return (T)this.GetTask(name);
         }
 
         public IEnumerable<KeyValuePair<string, ITimedTask>> GetAllTasks()

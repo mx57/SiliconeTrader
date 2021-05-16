@@ -29,8 +29,8 @@ namespace SiliconeTrader.Signals.Base
 
         protected override void Run()
         {
-            ProcessTrailingSignals();
-            ProcessAllRules();
+            this.ProcessTrailingSignals();
+            this.ProcessAllRules();
         }
 
         public void StopTrailing()
@@ -64,7 +64,7 @@ namespace SiliconeTrader.Signals.Base
         {
             double? globalRating = signalsService.GetGlobalRating();
 
-            foreach (var kvp in trailingSignals)
+            foreach (KeyValuePair<string, List<SignalTrailingInfo>> kvp in trailingSignals)
             {
                 string pair = kvp.Key;
                 List<SignalTrailingInfo> trailingInfoList = kvp.Value;
@@ -84,7 +84,7 @@ namespace SiliconeTrader.Signals.Base
                                 if (rulesService.CheckConditions(trailingInfo.Rule.Conditions, signals, globalRating, pair, null))
                                 {
                                     IEnumerable<ISignal> ruleSignals = signals.Where(s => trailingInfo.Rule.Conditions.Any(c => c.Signal == s.Key)).Select(s => s.Value);
-                                    InitiateBuy(pair, trailingInfo.Rule, ruleSignals);
+                                    this.InitiateBuy(pair, trailingInfo.Rule, ruleSignals);
                                 }
                             }
                         }
@@ -94,9 +94,9 @@ namespace SiliconeTrader.Signals.Base
                         trailingInfoList.RemoveAt(i);
                         if (trailingInfoList.Count == 0)
                         {
-                            StopTrailing(pair);
+                            this.StopTrailing(pair);
                         }
-                        if (LoggingEnabled)
+                        if (this.LoggingEnabled)
                         {
                             loggingService.Info($"Cancel trailing signal for {pair}. Rule: {trailingInfo.Rule.Name}, Reason: max duration reached");
                         }
@@ -117,7 +117,7 @@ namespace SiliconeTrader.Signals.Base
                     {
                         var groupedSignals = allSignals.Where(s => tradingService.GetPairConfig(s.Pair).BuyEnabled).GroupBy(s => s.Pair).ToDictionary(g => g.Key, g => g.ToDictionary(s => s.Name, s => s));
                         double? globalRating = signalsService.GetGlobalRating();
-                        List<String> excludedPairs = GetExcludedPairs();
+                        List<String> excludedPairs = this.GetExcludedPairs();
 
                         if (signalsService.RulesConfig.ProcessingMode == RuleProcessingMode.FirstMatch)
                         {
@@ -126,10 +126,10 @@ namespace SiliconeTrader.Signals.Base
 
                         foreach (IRule rule in enabledRules)
                         {
-                            foreach (var group in groupedSignals)
+                            foreach (KeyValuePair<string, Dictionary<string, ISignal>> group in groupedSignals)
                             {
                                 Dictionary<string, ISignal> signals = group.Value;
-                                ProcessRule(rule, signals, group.Key, excludedPairs, globalRating);
+                                this.ProcessRule(rule, signals, group.Key, excludedPairs, globalRating);
                             }
                         }
                     }
@@ -164,14 +164,14 @@ namespace SiliconeTrader.Signals.Base
                         StartTime = DateTimeOffset.Now
                     });
 
-                    if (LoggingEnabled)
+                    if (this.LoggingEnabled)
                     {
                         loggingService.Info($"Start trailing signal for {pair}. Rule: {rule.Name}");
                     }
                 }
                 else
                 {
-                    InitiateBuy(pair, rule, ruleSignals);
+                    this.InitiateBuy(pair, rule, ruleSignals);
                 }
 
                 if (signalsService.RulesConfig.ProcessingMode == RuleProcessingMode.FirstMatch)
@@ -190,11 +190,11 @@ namespace SiliconeTrader.Signals.Base
 
         private void InitiateBuy(string pair, IRule rule, IEnumerable<ISignal> ruleSignals)
         {
-            StopTrailing(pair);
+            this.StopTrailing(pair);
 
             IPairConfig pairConfig = tradingService.GetPairConfig(pair);
             SignalRuleModifiers ruleModifiers = rule.GetModifiers<SignalRuleModifiers>();
-            if (LoggingEnabled)
+            if (this.LoggingEnabled)
             {
                 loggingService.Info($"Initiate buy request for {pair}. Rule: {rule.Name}");
             }

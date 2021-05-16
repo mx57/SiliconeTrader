@@ -15,7 +15,7 @@ namespace SiliconeTrader.Core
 
         public ConfigProvider()
         {
-            IConfigurationRoot pathsConfig = GetConfig(PATHS_CONFIG_PATH, changedPathsConfig =>
+            IConfigurationRoot pathsConfig = this.GetConfig(PATHS_CONFIG_PATH, changedPathsConfig =>
             {
                 paths = changedPathsConfig.GetSection(PATHS_SECTION_NAME);
             });
@@ -27,7 +27,7 @@ namespace SiliconeTrader.Core
             try
             {
                 string configPath = paths.GetValue<string>(sectionName);
-                var fullConfigPath = Path.Combine(Directory.GetCurrentDirectory(), ROOT_CONFIG_DIR, configPath);
+                string fullConfigPath = Path.Combine(Directory.GetCurrentDirectory(), ROOT_CONFIG_DIR, configPath);
                 return File.ReadAllText(fullConfigPath);
             }
             catch (Exception ex)
@@ -42,7 +42,7 @@ namespace SiliconeTrader.Core
             try
             {
                 string configPath = paths.GetValue<string>(sectionName);
-                var fullConfigPath = Path.Combine(Directory.GetCurrentDirectory(), ROOT_CONFIG_DIR, configPath);
+                string fullConfigPath = Path.Combine(Directory.GetCurrentDirectory(), ROOT_CONFIG_DIR, configPath);
                 File.WriteAllText(fullConfigPath, definition);
             }
             catch (Exception ex)
@@ -53,7 +53,7 @@ namespace SiliconeTrader.Core
 
         public T GetSection<T>(string sectionName, Action<T> onChange = null)
         {
-            IConfigurationSection configSection = GetSection(sectionName, changedConfigSection =>
+            IConfigurationSection configSection = this.GetSection(sectionName, changedConfigSection =>
             {
                 onChange?.Invoke(changedConfigSection.Get<T>());
             });
@@ -63,7 +63,7 @@ namespace SiliconeTrader.Core
         public IConfigurationSection GetSection(string sectionName, Action<IConfigurationSection> onChange = null)
         {
             string configPath = paths.GetValue<string>(sectionName);
-            IConfigurationRoot configRoot = GetConfig(configPath, changedConfigRoot =>
+            IConfigurationRoot configRoot = this.GetConfig(configPath, changedConfigRoot =>
             {
                 onChange?.Invoke(changedConfigRoot.GetSection(sectionName));
             });
@@ -72,8 +72,8 @@ namespace SiliconeTrader.Core
 
         private IConfigurationRoot GetConfig(string configPath, Action<IConfigurationRoot> onChange)
         {
-            var configRootDir = Path.Combine(Directory.GetCurrentDirectory(), ROOT_CONFIG_DIR);
-            var fullConfigPath = new DirectoryInfo(configRootDir).FullName;
+            string configRootDir = Path.Combine(Directory.GetCurrentDirectory(), ROOT_CONFIG_DIR);
+            string fullConfigPath = new DirectoryInfo(configRootDir).FullName;
 
             if (!File.Exists(Path.Combine(configRootDir, configPath)))
             {
@@ -113,12 +113,12 @@ orca-bot    |    at SiliconeTrader.Core.ConfigProvider.GetConfig(String configPa
                 throw new FileNotFoundException(JsonConvert.SerializeObject(Directory.GetFiles(Directory.GetCurrentDirectory(), "*.*", SearchOption.AllDirectories)));
             }
 
-            var configBuilder = new ConfigurationBuilder()
+            IConfigurationBuilder configBuilder = new ConfigurationBuilder()
                  .SetBasePath(fullConfigPath)
                  .AddJsonFile(configPath, optional: false, reloadOnChange: true)
                  .AddEnvironmentVariables();
 
-            var configRoot = configBuilder.Build();
+            IConfigurationRoot configRoot = configBuilder.Build();
             ChangeToken.OnChange(configRoot.GetReloadToken, () => onChange(configRoot));
             return configRoot;
         }

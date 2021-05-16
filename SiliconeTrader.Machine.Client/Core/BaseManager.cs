@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SiliconeTrader.Machine.Client
+namespace SiliconeTrader.Machine.Client.Core
 {
-    public abstract class BaseManager
+    internal abstract class BaseManager
     {
         protected const string MediaType = "application/json";
 

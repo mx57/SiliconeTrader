@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace SiliconeTrader.Machine.Client
 {
     [Serializable]
-    internal class ConfigurationException : Exception
+    public class ConfigurationException : Exception
     {
         public ConfigurationException()
         {

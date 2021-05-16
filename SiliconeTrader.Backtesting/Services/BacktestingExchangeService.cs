@@ -24,7 +24,7 @@ namespace SiliconeTrader.Backtesting
         {
             loggingService.Info("Start Backtesting Exchange service...");
 
-            Api = InitializeApi();
+            this.Api = this.InitializeApi();
 
             loggingService.Info("Backtesting Exchange service started");
         }
@@ -46,8 +46,8 @@ namespace SiliconeTrader.Backtesting
         {
             if (markets == null && backtestingService.GetCurrentTickers() != null)
             {
-                this.markets = new ConcurrentBag<string>(backtestingService.GetCurrentTickers().Keys
-                    .Select(pair => GetPairMarket(pair)).Distinct().ToList());
+                markets = new ConcurrentBag<string>(backtestingService.GetCurrentTickers().Keys
+                    .Select(pair => this.GetPairMarket(pair)).Distinct().ToList());
             }
             return markets.AsEnumerable() ?? new List<string>();
         }
@@ -108,10 +108,10 @@ namespace SiliconeTrader.Backtesting
             {
                 if (tradingMarket == Constants.Markets.BTC)
                 {
-                    foreach (var market in arbitrageMarkets)
+                    foreach (ArbitrageMarket market in arbitrageMarkets)
                     {
-                        string marketPair = ChangeMarket(pair, market.ToString());
-                        string arbitragePair = GetArbitrageMarketPair(market);
+                        string marketPair = this.ChangeMarket(pair, market.ToString());
+                        string arbitragePair = this.GetArbitrageMarketPair(market);
 
                         if (marketPair != pair && 
                             backtestingService.GetCurrentTickers().TryGetValue(pair, out ITicker pairTicker) &&

@@ -38,8 +38,8 @@ namespace SiliconeTrader.Rules
         /// </summary>
         public IConfigurationSection Modifiers { get; set; }
 
-        IEnumerable<IRuleCondition> IRule.Conditions => Conditions;
-        IRuleTrailing IRule.Trailing => Trailing;
+        IEnumerable<IRuleCondition> IRule.Conditions => this.Conditions;
+        IRuleTrailing IRule.Trailing => this.Trailing;
 
         private object typedModifiersCached;
 
@@ -47,7 +47,7 @@ namespace SiliconeTrader.Rules
         {
             if (typedModifiersCached == null)
             {
-                typedModifiersCached = Modifiers.Get<T>();
+                typedModifiersCached = this.Modifiers.Get<T>();
             }
             return (T)typedModifiersCached;
         }

@@ -12,6 +12,6 @@ namespace SiliconeTrader.Rules
         public int MaxDuration { get; set; }
         public IEnumerable<RuleCondition> StartConditions { get; set; }
 
-        IEnumerable<IRuleCondition> IRuleTrailing.StartConditions => StartConditions;
+        IEnumerable<IRuleCondition> IRuleTrailing.StartConditions => this.StartConditions;
     }
 }

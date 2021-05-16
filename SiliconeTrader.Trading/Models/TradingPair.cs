@@ -10,8 +10,8 @@ namespace SiliconeTrader.Trading
     {
         public string Pair { get; set; }
         [JsonIgnore]
-        public string FormattedName => DCALevel > 0 ? $"{Pair}({DCALevel})" : Pair;
-        public int DCALevel => (OrderDates.Count > 0 ? (OrderDates.Count - 1) : 0) + (Metadata.AdditionalDCALevels ?? 0);
+        public string FormattedName => this.DCALevel > 0 ? $"{this.Pair}({this.DCALevel})" : this.Pair;
+        public int DCALevel => (this.OrderDates.Count > 0 ? (this.OrderDates.Count - 1) : 0) + (this.Metadata.AdditionalDCALevels ?? 0);
         public List<string> OrderIds { get; set; }
         public List<DateTimeOffset> OrderDates { get; set; }
         [JsonConverter(typeof(DecimalFormatJsonConverter), 8)]
@@ -21,44 +21,44 @@ namespace SiliconeTrader.Trading
         [JsonConverter(typeof(DecimalFormatJsonConverter), 8)]
         public decimal Fees { get; set; }
         [JsonConverter(typeof(DecimalFormatJsonConverter), 8)]
-        public decimal Cost => GetPartialCost(Amount);
+        public decimal Cost => this.GetPartialCost(this.Amount);
         [JsonIgnore]
         public decimal? CostOverride { get; set; }
         [JsonIgnore]
-        public decimal CurrentCost => CurrentPrice * Amount;
+        public decimal CurrentCost => this.CurrentPrice * this.Amount;
         [JsonIgnore]
         public decimal CurrentPrice { get; set; }
         [JsonIgnore]
         public decimal CurrentSpread { get; set; }
         [JsonIgnore]
-        public decimal CurrentMargin => Utils.CalculatePercentage(Cost + Fees + (Metadata.AdditionalCosts ?? 0), CurrentCost);
+        public decimal CurrentMargin => Utils.CalculatePercentage(this.Cost + this.Fees + (this.Metadata.AdditionalCosts ?? 0), this.CurrentCost);
         [JsonIgnore]
-        public double CurrentAge => OrderDates != null && OrderDates.Count > 0 ? (DateTimeOffset.Now - OrderDates.Min()).TotalDays : 0;
+        public double CurrentAge => this.OrderDates != null && this.OrderDates.Count > 0 ? (DateTimeOffset.Now - this.OrderDates.Min()).TotalDays : 0;
         [JsonIgnore]
-        public double LastBuyAge => OrderDates != null && OrderDates.Count > 0 ? (DateTimeOffset.Now - OrderDates.Max()).TotalDays : 0;
+        public double LastBuyAge => this.OrderDates != null && this.OrderDates.Count > 0 ? (DateTimeOffset.Now - this.OrderDates.Max()).TotalDays : 0;
         public OrderMetadata Metadata { get; set; } = new OrderMetadata();
 
         public decimal GetPartialCost(decimal partialAmount)
         {
-            if (CostOverride != null)
+            if (this.CostOverride != null)
             {
-                return CostOverride.Value;
+                return this.CostOverride.Value;
             }
             else
             {
-                return AveragePrice * partialAmount;
+                return this.AveragePrice * partialAmount;
             }
         }
 
         public void OverrideCost(decimal? costOverride)
         {
-            CostOverride = costOverride;
+            this.CostOverride = costOverride;
         }
 
         public void SetCurrentValues(decimal currentPrice, decimal currentSpread)
         {
-            CurrentPrice = currentPrice;
-            CurrentSpread = currentSpread;
+            this.CurrentPrice = currentPrice;
+            this.CurrentSpread = currentSpread;
         }
 
         public void SetMetadata(OrderMetadata metadata)

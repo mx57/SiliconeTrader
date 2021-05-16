@@ -30,9 +30,9 @@ namespace SiliconeTrader.Core
                 bool healthCheckFailed = false;
                 loggingService.Info("Health check results:");
 
-                foreach (var healthCheck in healthCheckService.GetHealthChecks().OrderBy(c => c.Name))
+                foreach (IHealthCheck healthCheck in healthCheckService.GetHealthChecks().OrderBy(c => c.Name))
                 {
-                    var elapsedSinceLastUpdate = (DateTimeOffset.Now - healthCheck.LastUpdated).TotalSeconds;
+                    double elapsedSinceLastUpdate = (DateTimeOffset.Now - healthCheck.LastUpdated).TotalSeconds;
                     bool healthCheckTimeout = coreService.Config.HealthCheckSuspendTradingTimeout > 0 && elapsedSinceLastUpdate > coreService.Config.HealthCheckSuspendTradingTimeout;
                     string indicator = (healthCheck.Failed || healthCheckTimeout) ? "[-]" : "[+]";
 

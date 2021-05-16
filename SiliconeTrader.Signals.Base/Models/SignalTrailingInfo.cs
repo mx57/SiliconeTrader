@@ -9,6 +9,6 @@ namespace SiliconeTrader.Signals.Base
     {
         public IRule Rule { get; set; }
         public DateTimeOffset StartTime { get; set; }
-        public double Duration => (DateTimeOffset.Now - StartTime).TotalSeconds;
+        public double Duration => (DateTimeOffset.Now - this.StartTime).TotalSeconds;
     }
 }

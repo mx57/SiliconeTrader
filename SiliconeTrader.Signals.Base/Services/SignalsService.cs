@@ -13,7 +13,7 @@ namespace SiliconeTrader.Signals.Base
     {
         public override string ServiceName => Constants.ServiceNames.SignalsService;
 
-        ISignalsConfig ISignalsService.Config => Config;
+        ISignalsConfig ISignalsService.Config => this.Config;
 
         public IModuleRules Rules { get; private set; }
         public ISignalRulesConfig RulesConfig { get; private set; }
@@ -40,13 +40,13 @@ namespace SiliconeTrader.Signals.Base
         {
             loggingService.Info("Start Signals service...");
 
-            OnSignalRulesChanged();
-            rulesService.RegisterRulesChangeCallback(OnSignalRulesChanged);
+            this.OnSignalRulesChanged();
+            rulesService.RegisterRulesChangeCallback(this.OnSignalRulesChanged);
 
             signalReceivers.Clear();
-            foreach (var definition in Config.Definitions)
+            foreach (SignalDefinition definition in this.Config.Definitions)
             {
-                var receiver = Application.ResolveOptionalNamed<ISignalReceiver>(definition.Receiver,
+                ISignalReceiver receiver = Application.ResolveOptionalNamed<ISignalReceiver>(definition.Receiver,
                     new TypedParameter(typeof(string), definition.Name),
                     new TypedParameter(typeof(IConfigurationSection), definition.Configuration));
 
@@ -70,7 +70,7 @@ namespace SiliconeTrader.Signals.Base
             signalRulesTimedTask = tasksService.AddTask(
                 name: nameof(SignalRulesTimedTask),
                 task: new SignalRulesTimedTask(loggingService, healthCheckService, tradingService, rulesService, this),
-                interval: RulesConfig.CheckInterval * 1000 / Application.Speed,
+                interval: this.RulesConfig.CheckInterval * 1000 / Application.Speed,
                 startDelay: Constants.TaskDelays.LowDelay,
                 startTask: false,
                 runNow: false,
@@ -83,7 +83,7 @@ namespace SiliconeTrader.Signals.Base
         {
             loggingService.Info("Stop Signals service...");
 
-            foreach (var receiver in signalReceivers.Values)
+            foreach (ISignalReceiver receiver in signalReceivers.Values)
             {
                 receiver.Stop();
             }
@@ -91,7 +91,7 @@ namespace SiliconeTrader.Signals.Base
 
             tasksService.RemoveTask(nameof(SignalRulesTimedTask), stopTask: true);
 
-            rulesService.UnregisterRulesChangeCallback(OnSignalRulesChanged);
+            rulesService.UnregisterRulesChangeCallback(this.OnSignalRulesChanged);
 
             healthCheckService.RemoveHealthCheck(Constants.HealthChecks.SignalRulesProcessed);
 
@@ -100,10 +100,10 @@ namespace SiliconeTrader.Signals.Base
 
         public void ProcessPair(string pair, Dictionary<string, ISignal> signals)
         {
-            IEnumerable<IRule> enabledRules = Rules.Entries.Where(r => r.Enabled);
+            IEnumerable<IRule> enabledRules = this.Rules.Entries.Where(r => r.Enabled);
             foreach (IRule rule in enabledRules)
             {
-                signalRulesTimedTask.ProcessRule(rule, signals, pair, signalRulesTimedTask.GetExcludedPairs(), GetGlobalRating());
+                signalRulesTimedTask.ProcessRule(rule, signals, pair, signalRulesTimedTask.GetExcludedPairs(), this.GetGlobalRating());
             }
         }
 
@@ -129,13 +129,13 @@ namespace SiliconeTrader.Signals.Base
 
         public IEnumerable<ISignal> GetAllSignals()
         {
-            return GetSignalsByName(null);
+            return this.GetSignalsByName(null);
         }
 
         public IEnumerable<ISignal> GetSignalsByName(string signalName)
         {
             IEnumerable<ISignal> signals = null;
-            foreach (var kvp in signalReceivers.OrderBy(r => r.Value.GetPeriod()))
+            foreach (KeyValuePair<string, ISignalReceiver> kvp in signalReceivers.OrderBy(r => r.Value.GetPeriod()))
             {
                 if (signalName == null || signalName == kvp.Key)
                 {
@@ -155,9 +155,9 @@ namespace SiliconeTrader.Signals.Base
 
         public IEnumerable<ISignal> GetSignalsByPair(string pair)
         {
-            foreach (var receiver in signalReceivers.Values.OrderBy(r => r.GetPeriod()))
+            foreach (ISignalReceiver receiver in signalReceivers.Values.OrderBy(r => r.GetPeriod()))
             {
-                var signal = receiver.GetSignals().FirstOrDefault(s => s.Pair == pair);
+                ISignal signal = receiver.GetSignals().FirstOrDefault(s => s.Pair == pair);
                 if (signal != null)
                 {
                     yield return signal;
@@ -167,12 +167,12 @@ namespace SiliconeTrader.Signals.Base
 
         public ISignal GetSignal(string pair, string signalName)
         {
-            return GetSignalsByName(signalName)?.FirstOrDefault(s => s.Pair == pair);
+            return this.GetSignalsByName(signalName)?.FirstOrDefault(s => s.Pair == pair);
         }
 
         public double? GetRating(string pair, string signalName)
         {
-            return GetSignalsByName(signalName)?.FirstOrDefault(s => s.Pair == pair)?.Rating;
+            return this.GetSignalsByName(signalName)?.FirstOrDefault(s => s.Pair == pair)?.Rating;
         }
 
         public double? GetRating(string pair, IEnumerable<string> signalNames)
@@ -181,9 +181,9 @@ namespace SiliconeTrader.Signals.Base
             {
                 double ratingSum = 0;
 
-                foreach (var signalName in signalNames)
+                foreach (string signalName in signalNames)
                 {
-                    var rating = GetSignalsByName(signalName)?.FirstOrDefault(s => s.Pair == pair)?.Rating;
+                    double? rating = this.GetSignalsByName(signalName)?.FirstOrDefault(s => s.Pair == pair)?.Rating;
                     if (rating != null)
                     {
                         ratingSum += rating.Value;
@@ -209,10 +209,10 @@ namespace SiliconeTrader.Signals.Base
                 double ratingSum = 0;
                 double ratingCount = 0;
 
-                foreach (var kvp in signalReceivers)
+                foreach (KeyValuePair<string, ISignalReceiver> kvp in signalReceivers)
                 {
                     string signalName = kvp.Key;
-                    if (Config.GlobalRatingSignals.Contains(signalName))
+                    if (this.Config.GlobalRatingSignals.Contains(signalName))
                     {
                         ISignalReceiver receiver = kvp.Value;
                         double? averageRating = receiver.GetAverageRating();
@@ -242,8 +242,8 @@ namespace SiliconeTrader.Signals.Base
 
         private void OnSignalRulesChanged()
         {
-            Rules = rulesService.GetRules(ServiceName);
-            RulesConfig = Rules.GetConfiguration<SignalRulesConfig>();
+            this.Rules = rulesService.GetRules(this.ServiceName);
+            this.RulesConfig = this.Rules.GetConfiguration<SignalRulesConfig>();
         }
     }
 }

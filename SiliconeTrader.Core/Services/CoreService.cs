@@ -14,7 +14,7 @@ namespace SiliconeTrader.Core
 
         public override string ServiceName => Constants.ServiceNames.CoreService;
 
-        ICoreConfig ICoreService.Config => Config;
+        ICoreConfig ICoreService.Config => this.Config;
 
         public string Version { get; private set; }
         public string VersionType { get; private set; } = " Beta";
@@ -36,8 +36,8 @@ namespace SiliconeTrader.Core
             this.backtestingService = backtestingService;
 
             // Log unhandled exceptions
-            AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
-            tasksService.SetUnhandledExceptionHandler(OnUnhandledException);
+            AppDomain.CurrentDomain.UnhandledException += this.OnUnhandledException;
+            tasksService.SetUnhandledExceptionHandler(this.OnUnhandledException);
 
             // Set decimal separator to a dot for all cultures
             var cultureInfo = new CultureInfo(CultureInfo.CurrentCulture.Name);
@@ -45,18 +45,18 @@ namespace SiliconeTrader.Core
             CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
             CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
-            Version = GetType().Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version + VersionType;
+            this.Version = this.GetType().Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version + this.VersionType;
         }
 
         public void Start()
         {
-            loggingService.Info($"Start Core service (Version: {Version})...");
+            loggingService.Info($"Start Core service (Version: {this.Version})...");
 
             if (backtestingService.Config.Enabled)
             {
                 backtestingService.Start();
             }
-            if (Config.HealthCheckInterval > 0 && (!backtestingService.Config.Enabled || !backtestingService.Config.Replay))
+            if (this.Config.HealthCheckInterval > 0 && (!backtestingService.Config.Enabled || !backtestingService.Config.Replay))
             {
                 healthCheckService.Start();
             }
@@ -91,7 +91,7 @@ namespace SiliconeTrader.Core
             {
                 notificationService.Stop();
             } 
-            if (Config.HealthCheckInterval > 0 && (!backtestingService.Config.Enabled || !backtestingService.Config.Replay))
+            if (this.Config.HealthCheckInterval > 0 && (!backtestingService.Config.Enabled || !backtestingService.Config.Replay))
             {
                 healthCheckService.Stop();
             }
@@ -109,8 +109,8 @@ namespace SiliconeTrader.Core
         {
             notificationService.Notify("SiliconeTrader restarting...");
             loggingService.Info("Restart Core service...");
-            Task.Run(() => Stop()).Wait(TimeSpan.FromSeconds(20));
-            Start();
+            Task.Run(() => this.Stop()).Wait(TimeSpan.FromSeconds(20));
+            this.Start();
         }
 
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)

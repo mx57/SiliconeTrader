@@ -15,7 +15,7 @@ namespace SiliconeTrader.Backtesting
 
         public override string ServiceName => Constants.ServiceNames.BacktestingService;
 
-        IBacktestingConfig IBacktestingService.Config => Config;
+        IBacktestingConfig IBacktestingService.Config => this.Config;
 
         public object SyncRoot { get; private set; } = new object();
 
@@ -36,17 +36,17 @@ namespace SiliconeTrader.Backtesting
 
         public void Start()
         {
-            loggingService.Info($"Start Backtesting service... (Replay: {Config.Replay})");
+            loggingService.Info($"Start Backtesting service... (Replay: {this.Config.Replay})");
 
             signalsService = Application.Resolve<ISignalsService>();
             tradingService = Application.Resolve<ITradingService>();
 
-            if (Config.Replay)
+            if (this.Config.Replay)
             {
                 backtestingLoadSnapshotsTimedTask = tasksService.AddTask(
                     name: nameof(BacktestingLoadSnapshotsTimedTask),
                     task: new BacktestingLoadSnapshotsTimedTask(loggingService, healthCheckService, tradingService, this),
-                    interval: Config.SnapshotsInterval / Config.ReplaySpeed * 1000,
+                    interval: this.Config.SnapshotsInterval / this.Config.ReplaySpeed * 1000,
                     startDelay: Constants.TaskDelays.HighDelay,
                     startTask: false,
                     runNow: false,
@@ -56,34 +56,34 @@ namespace SiliconeTrader.Backtesting
             backtestingSaveSnapshotsTimedTask = tasksService.AddTask(
                 name: nameof(BacktestingSaveSnapshotsTimedTask),
                 task: new BacktestingSaveSnapshotsTimedTask(loggingService, healthCheckService, tradingService, signalsService, this),
-                interval: Config.SnapshotsInterval * 1000,
+                interval: this.Config.SnapshotsInterval * 1000,
                 startDelay: Constants.TaskDelays.HighDelay,
                 startTask: false,
                 runNow: false,
                 skipIteration: 0);
 
-            if (Config.DeleteLogs)
+            if (this.Config.DeleteLogs)
             {
                 loggingService.DeleteAllLogs();
             }
 
             string virtualAccountPath = Path.Combine(Directory.GetCurrentDirectory(), tradingService.Config.VirtualAccountFilePath);
-            if (File.Exists(virtualAccountPath) && (Config.DeleteAccountData || !String.IsNullOrWhiteSpace(Config.CopyAccountDataPath)))
+            if (File.Exists(virtualAccountPath) && (this.Config.DeleteAccountData || !String.IsNullOrWhiteSpace(this.Config.CopyAccountDataPath)))
             {
                 File.Delete(virtualAccountPath);
             }
 
-            if (!String.IsNullOrWhiteSpace(Config.CopyAccountDataPath))
+            if (!String.IsNullOrWhiteSpace(this.Config.CopyAccountDataPath))
             {
-                File.Copy(Path.Combine(Directory.GetCurrentDirectory(), Config.CopyAccountDataPath), virtualAccountPath, true);
+                File.Copy(Path.Combine(Directory.GetCurrentDirectory(), this.Config.CopyAccountDataPath), virtualAccountPath, true);
             }
 
-            if (Config.Replay)
+            if (this.Config.Replay)
             {
-                Application.Speed = Config.ReplaySpeed;
+                Application.Speed = this.Config.ReplaySpeed;
             }
 
-            Application.Resolve<ICoreService>().Started += OnCoreServiceStarted;
+            Application.Resolve<ICoreService>().Started += this.OnCoreServiceStarted;
 
             loggingService.Info("Backtesting service started");
         }
@@ -92,7 +92,7 @@ namespace SiliconeTrader.Backtesting
         {
             loggingService.Info("Stop Backtesting service...");
 
-            if (Config.Replay)
+            if (this.Config.Replay)
             {
                 tasksService.RemoveTask(nameof(BacktestingLoadSnapshotsTimedTask), stopTask: true);
             }
@@ -103,7 +103,7 @@ namespace SiliconeTrader.Backtesting
             healthCheckService.RemoveHealthCheck(Constants.HealthChecks.BacktestingSignalsSnapshotLoaded);
             healthCheckService.RemoveHealthCheck(Constants.HealthChecks.BacktestingTickersSnapshotLoaded);
 
-            Application.Resolve<ICoreService>().Started -= OnCoreServiceStarted;
+            Application.Resolve<ICoreService>().Started -= this.OnCoreServiceStarted;
 
             loggingService.Info("Backtesting service stopped");
         }
@@ -113,7 +113,7 @@ namespace SiliconeTrader.Backtesting
             loggingService.Info("Backtesting results:");
 
             double lagAmount = 0;
-            foreach (var kvp in tasksService.GetAllTasks().OrderBy(t => t.Key))
+            foreach (KeyValuePair<string, ITimedTask> kvp in tasksService.GetAllTasks().OrderBy(t => t.Key))
             {
                 string taskName = kvp.Key;
                 ITimedTask task = kvp.Value;
@@ -134,10 +134,10 @@ namespace SiliconeTrader.Backtesting
 
         public string GetSnapshotFilePath(string snapshotEntity)
         {
-            var date = DateTimeOffset.UtcNow;
+            DateTimeOffset date = DateTimeOffset.UtcNow;
             return Path.Combine(
                 Directory.GetCurrentDirectory(),
-                Config.SnapshotsPath,
+                this.Config.SnapshotsPath,
                 snapshotEntity,
                 date.ToString("yyyy-MM-dd"),
                 date.ToString("HH"),
@@ -162,10 +162,10 @@ namespace SiliconeTrader.Backtesting
 
         private void OnCoreServiceStarted()
         {
-            tasksService.GetTask<TradingTimedTask>(nameof(TradingTimedTask)).SkipIteration = Config.TradingSpeedEasing;
+            tasksService.GetTask<TradingTimedTask>(nameof(TradingTimedTask)).SkipIteration = this.Config.TradingSpeedEasing;
             tasksService.GetTask<TradingTimedTask>(nameof(TradingTimedTask)).LoggingEnabled = false;
-            tasksService.GetTask<TradingRulesTimedTask>(nameof(TradingRulesTimedTask)).SkipIteration = Config.TradingRulesSpeedEasing;
-            tasksService.GetTask<SignalRulesTimedTask>(nameof(SignalRulesTimedTask)).SkipIteration = Config.SignalRulesSpeedEasing;
+            tasksService.GetTask<TradingRulesTimedTask>(nameof(TradingRulesTimedTask)).SkipIteration = this.Config.TradingRulesSpeedEasing;
+            tasksService.GetTask<SignalRulesTimedTask>(nameof(SignalRulesTimedTask)).SkipIteration = this.Config.SignalRulesSpeedEasing;
             tasksService.GetTask<SignalRulesTimedTask>(nameof(SignalRulesTimedTask)).LoggingEnabled = false;
         }
     }

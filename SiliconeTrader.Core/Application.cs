@@ -32,13 +32,13 @@ namespace SiliconeTrader.Core
                 var builder = new ContainerBuilder();
 
                 var assemblyPattern = new Regex($"{nameof(SiliconeTrader)}.*.dll");
-                var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies().Where(a => assemblyPattern.IsMatch(Path.GetFileName(a.Location)));
-                var dynamicAssembliesPath = new Uri(Path.GetDirectoryName(Assembly.GetCallingAssembly().Location)).LocalPath;
-                var dynamicAssemblies = Directory.EnumerateFiles(dynamicAssembliesPath, "*.dll", SearchOption.AllDirectories)
+                System.Collections.Generic.IEnumerable<Assembly> loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies().Where(a => assemblyPattern.IsMatch(Path.GetFileName(a.Location)));
+                string dynamicAssembliesPath = new Uri(Path.GetDirectoryName(Assembly.GetCallingAssembly().Location)).LocalPath;
+                System.Collections.Generic.IEnumerable<string> dynamicAssemblies = Directory.EnumerateFiles(dynamicAssembliesPath, "*.dll", SearchOption.AllDirectories)
                            .Where(filename => assemblyPattern.IsMatch(Path.GetFileName(filename)) &&
                            !loadedAssemblies.Any(a => Path.GetFileName(a.Location) == Path.GetFileName(filename)));
 
-                var allAssemblies = loadedAssemblies.Concat(dynamicAssemblies.Select(Assembly.LoadFrom)).Distinct();
+                System.Collections.Generic.IEnumerable<Assembly> allAssemblies = loadedAssemblies.Concat(dynamicAssemblies.Select(Assembly.LoadFrom)).Distinct();
 
                 builder.RegisterAssemblyModules(allAssemblies.ToArray());
                 Application.container = builder.Build();

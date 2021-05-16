@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace SiliconeTrader.Machine.Client
+namespace SiliconeTrader.Machine.Client.Core
 {
     internal class DefaultSettings
     {

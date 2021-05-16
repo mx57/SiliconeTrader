@@ -67,7 +67,7 @@ namespace SiliconeTrader.Core
         /// </summary>
         public LowResolutionTimedTask()
         {
-            this.timer.Elapsed += OnTimerElapsed;
+            timer.Elapsed += this.OnTimerElapsed;
         }
 
         /// <summary>
@@ -76,15 +76,15 @@ namespace SiliconeTrader.Core
         /// </summary>
         public void Start()
         {
-            if (!IsRunning)
+            if (!this.IsRunning)
             {
-                IsRunning = true;
+                this.IsRunning = true;
 
-                if (StartDelay > 0)
+                if (this.StartDelay > 0)
                 {
-                    Task.Delay((int)StartDelay).ContinueWith(t =>
+                    Task.Delay((int)this.StartDelay).ContinueWith(t =>
                     {
-                        if (IsRunning)
+                        if (this.IsRunning)
                         {
                             timer.Start();
                         }
@@ -106,7 +106,7 @@ namespace SiliconeTrader.Core
         /// </summary>
         public void Stop()
         {
-            Stop(-1);
+            this.Stop(-1);
         }
 
         /// <summary>
@@ -119,12 +119,12 @@ namespace SiliconeTrader.Core
         /// <param name="timeout">Timeout value in milliseconds to wait before killing the task</param>
         public void Stop(int timeout)
         {
-            if (IsRunning)
+            if (this.IsRunning)
             {
-                this.syncMutex.WaitOne(timeout);
-                this.syncMutex.Set();
-                this.timer.Stop();
-                IsRunning = false;
+                syncMutex.WaitOne(timeout);
+                syncMutex.Set();
+                timer.Stop();
+                this.IsRunning = false;
             }
         }
 
@@ -133,10 +133,10 @@ namespace SiliconeTrader.Core
         /// </summary>
         public void Terminate()
         {
-            if (IsRunning)
+            if (this.IsRunning)
             {
-                this.timer.Stop();
-                IsRunning = false;
+                timer.Stop();
+                this.IsRunning = false;
             }
         }
 
@@ -147,10 +147,10 @@ namespace SiliconeTrader.Core
         /// </summary>
         public void Join()
         {
-            if (IsRunning)
+            if (this.IsRunning)
             {
-                this.syncMutex.WaitOne();
-                this.syncMutex.Set();
+                syncMutex.WaitOne();
+                syncMutex.Set();
             }
         }
 
@@ -159,7 +159,7 @@ namespace SiliconeTrader.Core
         /// </summary>
         public void Pause()
         {
-            this.timer.Enabled = false;
+            timer.Enabled = false;
         }
 
         /// <summary>
@@ -167,7 +167,7 @@ namespace SiliconeTrader.Core
         /// </summary>
         public void Continue()
         {
-            this.timer.Enabled = true;
+            timer.Enabled = true;
         }
 
         /// <summary>
@@ -178,27 +178,27 @@ namespace SiliconeTrader.Core
         private void OnTimerElapsed(object sender, ElapsedEventArgs e)
         {
             //Force other threads to wait until it's finished when calling join.
-            this.syncMutex.Reset();
+            syncMutex.Reset();
 
             //Avoid re-calling the method while it is still operating.
-            this.timer.Stop();
+            timer.Stop();
 
-            if (IsRunning)
+            if (this.IsRunning)
             {
                 runWatch.Restart();
                 this.Run();
                 long runTime = runWatch.ElapsedMilliseconds;
-                TotalLagTime += (runTime > Interval) ? (runTime - Interval) : 0;
-                TotalRunTime += runTime;
-                RunCount++;
+                this.TotalLagTime += (runTime > this.Interval) ? (runTime - this.Interval) : 0;
+                this.TotalRunTime += runTime;
+                this.RunCount++;
                 runWatch.Stop();
 
                 //Re-Start the timer to execute the worker function endlessly.
-                this.timer.Start();
+                timer.Start();
             }
 
             //Release threads that might be frozen in join operation.
-            this.syncMutex.Set();
+            syncMutex.Set();
         }
 
         /// <summary>
@@ -206,7 +206,7 @@ namespace SiliconeTrader.Core
         /// </summary>
         public void RunNow()
         {
-            Run();
+            this.Run();
         }
 
         /// <summary>

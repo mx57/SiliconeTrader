@@ -21,7 +21,7 @@ namespace SiliconeTrader.Exchange.Base
         public decimal AveragePrice { get; set; }
         public decimal Fees { get; set; }
         public string FeesCurrency { get; set; }
-        public decimal Cost => AveragePrice * AmountFilled;
+        public decimal Cost => this.AveragePrice * this.AmountFilled;
         public OrderMetadata Metadata { get; set; } = new OrderMetadata();
     }
 }

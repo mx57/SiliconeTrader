@@ -41,17 +41,17 @@ namespace SiliconeTrader.Trading
         {
             if (order.Side == OrderSide.Buy)
             {
-                AddBuyOrder(order);
+                this.AddBuyOrder(order);
             }
             else
             {
-                AddSellOrder(order);
+                this.AddSellOrder(order);
             }
         }
 
         public virtual void AddBuyOrder(IOrderDetails order)
         {
-            lock (SyncRoot)
+            lock (this.SyncRoot)
             {
                 if (order.Side == OrderSide.Buy && (order.Result == OrderResult.Filled || order.Result == OrderResult.FilledPartially))
                 {
@@ -63,7 +63,7 @@ namespace SiliconeTrader.Trading
                     if (!order.IsNormalized || order.Pair.EndsWith(Constants.Markets.USDT))
                     {
                         balanceOffset -= order.Cost;
-                        AddBalance(balanceOffset);
+                        this.AddBalance(balanceOffset);
                     }
                     else
                     {
@@ -97,7 +97,7 @@ namespace SiliconeTrader.Trading
                         }
                     }
 
-                    AddOrUpdatePair(order, order.Pair, feesMarketCurrency, feesPairCurrency);
+                    this.AddOrUpdatePair(order, order.Pair, feesMarketCurrency, feesPairCurrency);
                 }
             }
         }
@@ -105,7 +105,7 @@ namespace SiliconeTrader.Trading
         public virtual ITradeResult AddSellOrder(IOrderDetails order)
         {
             ITradeResult tradeResult = new TradeResult();
-            lock (SyncRoot)
+            lock (this.SyncRoot)
             {
                 if (tradingPairs.TryGetValue(order.Pair, out TradingPair tradingPair))
                 {
@@ -120,7 +120,7 @@ namespace SiliconeTrader.Trading
                         if (!order.IsNormalized || order.Pair.EndsWith(Constants.Markets.USDT))
                         {
                             balanceOffset += order.Cost;
-                            AddBalance(balanceOffset);
+                            this.AddBalance(balanceOffset);
                         }
                         else
                         {
@@ -130,7 +130,7 @@ namespace SiliconeTrader.Trading
 
                             decimal price = tradingService.GetPrice(normalizedMarket, TradePriceType.Ask);
                             decimal amount = (order.Cost - feesMarketCurrency) / price;
-                            AddOrUpdatePair(order, normalizedMarket, feesMarketCurrency, feesPairCurrency, amount, price);
+                            this.AddOrUpdatePair(order, normalizedMarket, feesMarketCurrency, feesPairCurrency, amount, price);
                         }
 
                         decimal sellFees = feesMarketCurrency + tradingPair.Fees * amountDifference;
@@ -215,7 +215,7 @@ namespace SiliconeTrader.Trading
 
         public IOrderDetails AddBlankOrder(string pair, decimal amount, bool includeFees = true)
         {
-            lock (SyncRoot)
+            lock (this.SyncRoot)
             {
                 if (tradingPairs.TryGetValue(pair, out TradingPair tradingPair) && tradingPair.Amount >= amount)
                 {
@@ -256,7 +256,7 @@ namespace SiliconeTrader.Trading
 
         public decimal GetBalance()
         {
-            lock (SyncRoot)
+            lock (this.SyncRoot)
             {
                 return balance;
             }
@@ -265,7 +265,7 @@ namespace SiliconeTrader.Trading
         public decimal GetTotalBalance()
         {
             decimal totalBalance = balance;
-            foreach (var tradingPair in tradingPairs.Values)
+            foreach (TradingPair tradingPair in tradingPairs.Values)
             {
                 totalBalance += tradingService.GetPrice(tradingPair.Pair, TradePriceType.Bid) * tradingPair.Amount;
             }
@@ -274,7 +274,7 @@ namespace SiliconeTrader.Trading
 
         public bool HasTradingPair(string pair, bool includeDust = false)
         {
-            lock (SyncRoot)
+            lock (this.SyncRoot)
             {
                 if (includeDust)
                 {
@@ -289,7 +289,7 @@ namespace SiliconeTrader.Trading
 
         public ITradingPair GetTradingPair(string pair, bool includeDust = false)
         {
-            lock (SyncRoot)
+            lock (this.SyncRoot)
             {
                 if (tradingPairs.TryGetValue(pair, out TradingPair tradingPair) && (includeDust || tradingPair.CurrentCost > tradingService.Config.MinCost || tradingPair.CurrentPrice == 0))
                 {
@@ -304,7 +304,7 @@ namespace SiliconeTrader.Trading
 
         public IEnumerable<ITradingPair> GetTradingPairs(bool includeDust = false)
         {
-            lock (SyncRoot)
+            lock (this.SyncRoot)
             {
                 if (includeDust)
                 {
@@ -319,7 +319,7 @@ namespace SiliconeTrader.Trading
 
         public virtual void Dispose()
         {
-            lock (SyncRoot)
+            lock (this.SyncRoot)
             {
                 tradingPairs.Clear();
             }

@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SiliconeTrader.Machine.Client
+namespace SiliconeTrader.Machine.Client.Core
 {
     public interface IHealthManager
     {

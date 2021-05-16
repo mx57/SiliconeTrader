@@ -14,8 +14,8 @@ namespace SiliconeTrader.Core
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            var d = (decimal)value;
-            var rounded = Math.Round(d, _numberOfDecimals, MidpointRounding.AwayFromZero);
+            decimal d = (decimal)value;
+            decimal rounded = Math.Round(d, _numberOfDecimals, MidpointRounding.AwayFromZero);
             writer.WriteValue(rounded);
         }
 

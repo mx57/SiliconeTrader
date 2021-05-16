@@ -66,30 +66,30 @@ namespace SiliconeTrader.Core
         /// </summary>
         public void Start()
         {
-            if (!IsRunning)
+            if (!this.IsRunning)
             {
-                IsRunning = true;
+                this.IsRunning = true;
                 runWatch = new Stopwatch();
                 timingEvent = new ManualResetEvent(false);
                 blockingEvent = new ManualResetEvent(true);
 
                 timerThread = new Thread(() =>
                 {
-                    if (Stopwatch == null)
+                    if (this.Stopwatch == null)
                     {
-                        Stopwatch = Stopwatch.StartNew();
+                        this.Stopwatch = Stopwatch.StartNew();
                     }
-                    else if (!Stopwatch.IsRunning)
+                    else if (!this.Stopwatch.IsRunning)
                     {
-                        Stopwatch.Restart();
+                        this.Stopwatch.Restart();
                     }
 
-                    long startTime = Stopwatch.ElapsedMilliseconds;
-                    while (IsRunning)
+                    long startTime = this.Stopwatch.ElapsedMilliseconds;
+                    while (this.IsRunning)
                     {
                         blockingEvent.WaitOne();
-                        long elapsedTime = Stopwatch.ElapsedMilliseconds;
-                        double nextRunTime = RunCount * Interval + StartDelay + TotalLagTime + startTime;
+                        long elapsedTime = this.Stopwatch.ElapsedMilliseconds;
+                        double nextRunTime = this.RunCount * this.Interval + this.StartDelay + this.TotalLagTime + startTime;
                         double waitTime = nextRunTime - elapsedTime;
                         if (waitTime > 0)
                         {
@@ -99,19 +99,19 @@ namespace SiliconeTrader.Core
                             }
                         }
 
-                        if (SkipIteration == 0 || RunCount % SkipIteration != 0)
+                        if (this.SkipIteration == 0 || this.RunCount % this.SkipIteration != 0)
                         {
                             runWatch.Restart();
-                            SafeRun();
+                            this.SafeRun();
                             long runTime = runWatch.ElapsedMilliseconds;
-                            TotalLagTime += (runTime > Interval) ? (runTime - Interval) : 0;
-                            TotalRunTime += runTime;
+                            this.TotalLagTime += (runTime > this.Interval) ? (runTime - this.Interval) : 0;
+                            this.TotalRunTime += runTime;
                         }
-                        RunCount++;
+                        this.RunCount++;
                     }
                 });
 
-                timerThread.Priority = Priorty;
+                timerThread.Priority = this.Priorty;
                 timerThread.Start();
             }
         }
@@ -121,7 +121,7 @@ namespace SiliconeTrader.Core
         /// </summary>
         public void Stop()
         {
-            Stop(true);
+            this.Stop(true);
         }
 
         /// <summary>
@@ -132,9 +132,9 @@ namespace SiliconeTrader.Core
         /// </remarks>
         public void Stop(bool terminateThread)
         {
-            if (IsRunning)
+            if (this.IsRunning)
             {
-                IsRunning = false;
+                this.IsRunning = false;
                 timingEvent.Set();
                 blockingEvent.Set();
                 runWatch.Stop();
@@ -170,7 +170,7 @@ namespace SiliconeTrader.Core
         /// </summary>
         public void RunNow()
         {
-            SafeRun();
+            this.SafeRun();
         }
 
         /// <summary>
@@ -186,7 +186,7 @@ namespace SiliconeTrader.Core
         {
             try
             {
-                Run();
+                this.Run();
             }
             catch (Exception ex)
             {

@@ -41,14 +41,14 @@ namespace SiliconeTrader.Exchange.Base
         public virtual void Start(bool virtualTrading)
         {
             loggingService.Info("Start Exchange service...");
-            Api = InitializeApi();
+            this.Api = this.InitializeApi();
 
-            if (!virtualTrading && !String.IsNullOrWhiteSpace(Config.KeysPath))
+            if (!virtualTrading && !String.IsNullOrWhiteSpace(this.Config.KeysPath))
             {
-                if (File.Exists(Config.KeysPath))
+                if (File.Exists(this.Config.KeysPath))
                 {
                     loggingService.Info("Load keys from encrypted file...");
-                    Api.LoadAPIKeys(Config.KeysPath);
+                    this.Api.LoadAPIKeys(this.Config.KeysPath);
                 }
                 else
                 {
@@ -60,24 +60,24 @@ namespace SiliconeTrader.Exchange.Base
             IEnumerable<KeyValuePair<string, ExchangeTicker>> exchangeTickers = null;
             for (int retry = 0; retry < INITIAL_TICKERS_RETRY_LIMIT; retry++)
             {
-                Task.Run(() => exchangeTickers = Api.GetTickers()).Wait(TimeSpan.FromMilliseconds(INITIAL_TICKERS_TIMEOUT_MILLISECONDS));
+                Task.Run(() => exchangeTickers = this.Api.GetTickers()).Wait(TimeSpan.FromMilliseconds(INITIAL_TICKERS_TIMEOUT_MILLISECONDS));
                 if (exchangeTickers != null) break;
             }
             if (exchangeTickers != null)
             {
-                Tickers = new ConcurrentDictionary<string, Ticker>(exchangeTickers.Select(t => new KeyValuePair<string, Ticker>(t.Key, new Ticker
+                this.Tickers = new ConcurrentDictionary<string, Ticker>(exchangeTickers.Select(t => new KeyValuePair<string, Ticker>(t.Key, new Ticker
                 {
                     Pair = t.Key,
                     AskPrice = t.Value.Ask,
                     BidPrice = t.Value.Bid,
                     LastPrice = t.Value.Last
                 })));
-                markets = new ConcurrentBag<string>(Tickers.Keys.Select(pair => GetPairMarket(pair)).Distinct().ToList());
+                markets = new ConcurrentBag<string>(this.Tickers.Keys.Select(pair => this.GetPairMarket(pair)).Distinct().ToList());
 
                 lastTickersUpdate = DateTimeOffset.Now;
-                healthCheckService.UpdateHealthCheck(Constants.HealthChecks.TickersUpdated, $"Updates: {Tickers.Count}");
+                healthCheckService.UpdateHealthCheck(Constants.HealthChecks.TickersUpdated, $"Updates: {this.Tickers.Count}");
             }
-            else if (Tickers != null)
+            else if (this.Tickers != null)
             {
                 loggingService.Error("Unable to get initial ticker values");
             }
@@ -86,7 +86,7 @@ namespace SiliconeTrader.Exchange.Base
                 throw new Exception("Unable to get initial ticker values");
             }
 
-            ConnectTickersWebsocket();
+            this.ConnectTickersWebsocket();
 
             loggingService.Info("Exchange service started");
         }
@@ -95,7 +95,7 @@ namespace SiliconeTrader.Exchange.Base
         {
             loggingService.Info("Stop Exchange service...");
 
-            DisconnectTickersWebsocket();
+            this.DisconnectTickersWebsocket();
             lastTickersUpdate = DateTimeOffset.MinValue;
             healthCheckService.RemoveHealthCheck(Constants.HealthChecks.TickersUpdated);
 
@@ -108,13 +108,13 @@ namespace SiliconeTrader.Exchange.Base
 
         public virtual decimal ClampOrderAmount(string pair, decimal amount)
         {
-            ExchangeMarket market = Api.GetExchangeMarketFromCache(pair);
+            ExchangeMarket market = this.Api.GetExchangeMarketFromCache(pair);
             return market == null ? amount : CryptoUtility.ClampDecimal(market.MinTradeSize, market.MaxTradeSize, market.QuantityStepSize, amount);
         }
 
         public virtual decimal ClampOrderPrice(string pair, decimal price)
         {
-            ExchangeMarket market = Api.GetExchangeMarketFromCache(pair);
+            ExchangeMarket market = this.Api.GetExchangeMarketFromCache(pair);
             return market == null ? price : CryptoUtility.ClampDecimal(market.MinPrice, market.MaxPrice, market.PriceStepSize, price);
         }
 
@@ -123,7 +123,7 @@ namespace SiliconeTrader.Exchange.Base
             try
             {
                 loggingService.Info("Connect to Exchange tickers...");
-                socket = Api.GetTickersWebSocket(OnTickersUpdated);
+                socket = this.Api.GetTickersWebSocket(this.OnTickersUpdated);
                 loggingService.Info("Connected to Exchange tickers");
 
                 tickersMonitorTimedTask = tasksService.AddTask(
@@ -161,7 +161,7 @@ namespace SiliconeTrader.Exchange.Base
 
         public virtual IEnumerable<ITicker> GetTickers()
         {
-            return Tickers.Values;
+            return this.Tickers.Values;
         }
 
         public virtual IEnumerable<string> GetMarkets()
@@ -171,19 +171,19 @@ namespace SiliconeTrader.Exchange.Base
 
         public virtual IEnumerable<string> GetMarketPairs(string market)
         {
-            return Tickers.Keys.Where(t => t.EndsWith(market));
+            return this.Tickers.Keys.Where(t => t.EndsWith(market));
         }
 
         public virtual Dictionary<string, decimal> GetAvailableAmounts()
         {
-            return Api.GetAmountsAvailableToTradeAsync().Result;
+            return this.Api.GetAmountsAvailableToTradeAsync().Result;
         }
 
         public abstract IEnumerable<IOrderDetails> GetTrades(string pair);
 
         public virtual decimal GetPrice(string pair, TradePriceType priceType)
         {
-            if (Tickers.TryGetValue(pair, out Ticker ticker))
+            if (this.Tickers.TryGetValue(pair, out Ticker ticker))
             {
                 if (priceType == TradePriceType.Ask)
                 {
@@ -206,7 +206,7 @@ namespace SiliconeTrader.Exchange.Base
 
         public virtual decimal GetPriceSpread(string pair)
         {
-            if (Tickers.TryGetValue(pair, out Ticker ticker))
+            if (this.Tickers.TryGetValue(pair, out Ticker ticker))
             {
                 return Utils.CalculatePercentage(ticker.BidPrice, ticker.AskPrice);
             }
@@ -222,14 +222,14 @@ namespace SiliconeTrader.Exchange.Base
 
         public virtual string GetPairMarket(string pair)
         {
-            return Api.ExchangeSymbolToGlobalSymbol(pair).Split('-')[0];
+            return this.Api.ExchangeSymbolToGlobalSymbol(pair).Split('-')[0];
         }
 
         public virtual string ChangeMarket(string pair, string market)
         {
             if (!pair.StartsWith(market) && !pair.EndsWith(market))
             {
-                string currentMarket = GetPairMarket(pair);
+                string currentMarket = this.GetPairMarket(pair);
                 return pair.Substring(0, pair.Length - currentMarket.Length) + market;
             }
             return pair;
@@ -237,16 +237,16 @@ namespace SiliconeTrader.Exchange.Base
 
         public virtual decimal ConvertPrice(string pair, decimal price, string market, TradePriceType priceType)
         {
-            string pairMarket = GetPairMarket(pair);
+            string pairMarket = this.GetPairMarket(pair);
             if (pairMarket == Constants.Markets.USDT)
             {
                 string marketPair = market + pairMarket;
-                return price / GetPrice(marketPair, priceType);
+                return price / this.GetPrice(marketPair, priceType);
             }
             else
             {
                 string marketPair = pairMarket + market;
-                return GetPrice(marketPair, priceType) * price;
+                return this.GetPrice(marketPair, priceType) * price;
             }
         }
 
@@ -267,9 +267,9 @@ namespace SiliconeTrader.Exchange.Base
 
             lastTickersUpdate = DateTimeOffset.Now;
 
-            foreach (var update in updatedTickers)
+            foreach (KeyValuePair<string, ExchangeTicker> update in updatedTickers)
             {
-                if (Tickers.TryGetValue(update.Key, out Ticker ticker))
+                if (this.Tickers.TryGetValue(update.Key, out Ticker ticker))
                 {
                     ticker.AskPrice = update.Value.Ask;
                     ticker.BidPrice = update.Value.Bid;
@@ -277,7 +277,7 @@ namespace SiliconeTrader.Exchange.Base
                 }
                 else
                 {
-                    Tickers.TryAdd(update.Key, new Ticker
+                    this.Tickers.TryAdd(update.Key, new Ticker
                     {
                         Pair = update.Key,
                         AskPrice = update.Value.Ask,
@@ -285,7 +285,7 @@ namespace SiliconeTrader.Exchange.Base
                         LastPrice = update.Value.Last
                     });
 
-                    var market = GetPairMarket(update.Key);
+                    string market = this.GetPairMarket(update.Key);
                     if (!markets.Contains(market))
                     {
                         markets.Add(market);

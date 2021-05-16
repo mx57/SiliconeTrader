@@ -28,22 +28,22 @@ namespace SiliconeTrader.Core
         {
             return new OrderMetadata
             {
-                IsTransitional = metadata.IsTransitional ?? IsTransitional,
-                OriginalPair = metadata.OriginalPair ?? OriginalPair,
-                TradingRules = metadata.TradingRules ?? TradingRules,
-                SignalRule = metadata.SignalRule ?? SignalRule,
-                Signals = metadata.Signals ?? Signals,
-                BoughtRating = metadata.BoughtRating ?? BoughtRating,
-                CurrentRating = metadata.CurrentRating ?? CurrentRating,
-                BoughtGlobalRating = metadata.BoughtGlobalRating ?? BoughtGlobalRating,
-                CurrentGlobalRating = metadata.CurrentGlobalRating ?? CurrentGlobalRating,
-                LastBuyMargin = metadata.LastBuyMargin ?? LastBuyMargin,
-                AdditionalDCALevels = metadata.AdditionalDCALevels ?? AdditionalDCALevels,
-                AdditionalCosts = metadata.AdditionalCosts ?? AdditionalCosts,
-                FeesNonDeductible = metadata.FeesNonDeductible ?? FeesNonDeductible,
-                SwapPair = metadata.SwapPair ?? SwapPair,
-                Arbitrage = metadata.Arbitrage ?? Arbitrage,
-                ArbitragePercentage = metadata.ArbitragePercentage ?? ArbitragePercentage
+                IsTransitional = metadata.IsTransitional ?? this.IsTransitional,
+                OriginalPair = metadata.OriginalPair ?? this.OriginalPair,
+                TradingRules = metadata.TradingRules ?? this.TradingRules,
+                SignalRule = metadata.SignalRule ?? this.SignalRule,
+                Signals = metadata.Signals ?? this.Signals,
+                BoughtRating = metadata.BoughtRating ?? this.BoughtRating,
+                CurrentRating = metadata.CurrentRating ?? this.CurrentRating,
+                BoughtGlobalRating = metadata.BoughtGlobalRating ?? this.BoughtGlobalRating,
+                CurrentGlobalRating = metadata.CurrentGlobalRating ?? this.CurrentGlobalRating,
+                LastBuyMargin = metadata.LastBuyMargin ?? this.LastBuyMargin,
+                AdditionalDCALevels = metadata.AdditionalDCALevels ?? this.AdditionalDCALevels,
+                AdditionalCosts = metadata.AdditionalCosts ?? this.AdditionalCosts,
+                FeesNonDeductible = metadata.FeesNonDeductible ?? this.FeesNonDeductible,
+                SwapPair = metadata.SwapPair ?? this.SwapPair,
+                Arbitrage = metadata.Arbitrage ?? this.Arbitrage,
+                ArbitragePercentage = metadata.ArbitragePercentage ?? this.ArbitragePercentage
             };
         }
     }

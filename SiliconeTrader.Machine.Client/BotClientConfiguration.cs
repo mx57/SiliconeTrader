@@ -9,9 +9,9 @@ namespace SiliconeTrader.Machine.Client
 
         internal void EnsureValidConfiguration()
         {
-            if (BotClients == null || BotClients.Count == 0)
+            if (this.BotClients == null || this.BotClients.Count == 0)
             {
-                throw new ArgumentException(nameof(BotClients));
+                throw new ArgumentException(nameof(this.BotClients));
             }
         }
     }

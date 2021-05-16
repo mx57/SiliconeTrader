@@ -34,7 +34,7 @@ namespace SiliconeTrader.Trading
             {
                 loggingService.Info("Get account data...");
 
-                foreach (var kvp in tradingService.Exchange.GetAvailableAmounts())
+                foreach (KeyValuePair<string, decimal> kvp in tradingService.Exchange.GetAvailableAmounts())
                 {
                     string currency = kvp.Key;
                     decimal amount = kvp.Value;
@@ -72,12 +72,12 @@ namespace SiliconeTrader.Trading
             // Lock the account and reapply all trades
             try
             {
-                lock (SyncRoot)
+                lock (this.SyncRoot)
                 {
                     ConcurrentDictionary<string, TradingPair> tradingPairsSaved = null;
                     if (isInitialRefresh)
                     {
-                        TradingAccountData data = LoadSavedData();
+                        TradingAccountData data = this.LoadSavedData();
                         tradingPairsSaved = data?.TradingPairs ?? new ConcurrentDictionary<string, TradingPair>();
                     }
                     else
@@ -86,23 +86,23 @@ namespace SiliconeTrader.Trading
                     }
                     tradingPairs = new ConcurrentDictionary<string, TradingPair>();
 
-                    foreach (var kvp in availableTrades)
+                    foreach (KeyValuePair<string, IEnumerable<IOrderDetails>> kvp in availableTrades)
                     {
                         string pair = kvp.Key;
                         decimal amount = availableAmounts[pair];
                         IEnumerable<IOrderDetails> trades = kvp.Value;
 
-                        foreach (var trade in trades)
+                        foreach (IOrderDetails trade in trades)
                         {
                             if (trade.Date >= tradingService.Config.AccountInitialBalanceDate)
                             {
                                 if (trade.Side == OrderSide.Buy)
                                 {
-                                    AddBuyOrder(trade);
+                                    this.AddBuyOrder(trade);
                                 }
                                 else
                                 {
-                                    ITradeResult tradeResult = AddSellOrder(trade);
+                                    ITradeResult tradeResult = this.AddSellOrder(trade);
                                 }
 
                                 if (isInitialRefresh)
@@ -119,7 +119,7 @@ namespace SiliconeTrader.Trading
                         }
                     }
 
-                    foreach (var pair in tradingPairs.Keys.ToList())
+                    foreach (string pair in tradingPairs.Keys.ToList())
                     {
                         if (tradingPairsSaved.TryGetValue(pair, out TradingPair saved))
                         {
@@ -130,7 +130,7 @@ namespace SiliconeTrader.Trading
                     balance = newBalance;
 
                     // Add trades that were completed during account refresh
-                    foreach (var order in tradingService.OrderHistory)
+                    foreach (IOrderDetails order in tradingService.OrderHistory)
                     {
                         if (order.Date > refreshStart)
                         {
@@ -139,13 +139,13 @@ namespace SiliconeTrader.Trading
                                 if (!tradingPair.OrderIds.Contains(order.OrderId))
                                 {
                                     loggingService.Info($"Add missing order for {order.Pair} ({order.OrderId})");
-                                    AddOrder(order);
+                                    this.AddOrder(order);
                                 }
                             }
                             else
                             {
                                 loggingService.Info($"Add missing order for {order.Pair} ({order.OrderId})");
-                                AddOrder(order);
+                                this.AddOrder(order);
                             }
                         }
                     }
@@ -171,11 +171,11 @@ namespace SiliconeTrader.Trading
 
         public override void Save()
         {
-            lock (SyncRoot)
+            lock (this.SyncRoot)
             {
                 try
                 {
-                    var tradingService = Application.Resolve<ITradingService>();
+                    ITradingService tradingService = Application.Resolve<ITradingService>();
                     string accountFilePath = Path.Combine(Directory.GetCurrentDirectory(), tradingService.Config.AccountFilePath);
 
                     var data = new TradingAccountData
@@ -198,16 +198,16 @@ namespace SiliconeTrader.Trading
 
         private TradingAccountData LoadSavedData()
         {
-            lock (SyncRoot)
+            lock (this.SyncRoot)
             {
                 try
                 {
-                    var tradingService = Application.Resolve<ITradingService>();
+                    ITradingService tradingService = Application.Resolve<ITradingService>();
                     string accountFilePath = Path.Combine(Directory.GetCurrentDirectory(), tradingService.Config.AccountFilePath);
 
                     if (File.Exists(accountFilePath))
                     {
-                        BackupAccountData(accountFilePath);
+                        this.BackupAccountData(accountFilePath);
                         string accountJson = File.ReadAllText(accountFilePath);
                         return JsonConvert.DeserializeObject<TradingAccountData>(accountJson);
                     }

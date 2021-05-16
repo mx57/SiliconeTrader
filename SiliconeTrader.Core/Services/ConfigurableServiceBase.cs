@@ -21,8 +21,8 @@ namespace SiliconeTrader.Core
                 {
                     if (config == null)
                     {
-                        config = RawConfig.Get<TConfig>();
-                        PrepareConfig();
+                        config = this.RawConfig.Get<TConfig>();
+                        this.PrepareConfig();
                     }
                     return config;
                 }
@@ -37,7 +37,7 @@ namespace SiliconeTrader.Core
                 {
                     if (rawConfig == null)
                     {
-                        rawConfig = Application.ConfigProvider.GetSection(ServiceName, OnRawConfigChanged);
+                        rawConfig = Application.ConfigProvider.GetSection(this.ServiceName, this.OnRawConfigChanged);
                     }
                     return rawConfig;
                 }
@@ -63,9 +63,9 @@ namespace SiliconeTrader.Core
             if ((DateTimeOffset.Now - lastReloadDate).TotalMilliseconds > DELAY_BETWEEN_CONFIG_RELOADS_MILLISECONDS)
             {
                 lastReloadDate = DateTimeOffset.Now;
-                PrepareConfig();
-                OnConfigReloaded();
-                Application.Resolve<ILoggingService>().Info($"{ServiceName} configuration reloaded");
+                this.PrepareConfig();
+                this.OnConfigReloaded();
+                Application.Resolve<ILoggingService>().Info($"{this.ServiceName} configuration reloaded");
             }
         }
     }

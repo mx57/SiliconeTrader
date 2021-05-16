@@ -40,14 +40,14 @@ namespace SiliconeTrader.Signals.TradingView
             this.tradingService = tradingService;
             this.signalReceiver = signalReceiver;
 
-            this.signalsSerializer = new JsonSerializer();
-            this.signalsSerializer.Converters.Add(new TradingViewCryptoSignalConverter());
-            this.httpClient = CreateHttpClient();
+            signalsSerializer = new JsonSerializer();
+            signalsSerializer.Converters.Add(new TradingViewCryptoSignalConverter());
+            httpClient = this.CreateHttpClient();
         }
 
         protected override void Run()
         {
-            var requestData = signalReceiver.Config.RequestData
+            string requestData = signalReceiver.Config.RequestData
                 .Replace("%EXCHANGE%", tradingService.Config.Exchange.ToUpper())
                 .Replace("%MARKET%", tradingService.Config.Market)
                 .Replace("%PERIOD%", signalReceiver.Config.SignalPeriod <= 240 ? $"|{signalReceiver.Config.SignalPeriod}" : "")
@@ -56,27 +56,27 @@ namespace SiliconeTrader.Signals.TradingView
             var requestContent = new StringContent(requestData, Encoding.UTF8, "application/json");
             try
             {
-                using (var response = httpClient.PostAsync(signalReceiver.Config.RequestUrl, requestContent).Result)
+                using (HttpResponseMessage response = httpClient.PostAsync(signalReceiver.Config.RequestUrl, requestContent).Result)
                 {
-                    var responseContent = response.Content.ReadAsStringAsync().Result;
-                    var jtokens = JObject.Parse(responseContent).SelectTokens("data[*].d");
+                    string responseContent = response.Content.ReadAsStringAsync().Result;
+                    IEnumerable<JToken> jtokens = JObject.Parse(responseContent).SelectTokens("data[*].d");
                     lock (syncRoot)
                     {
-                        List<Signal> historicalSignals = GetHistoricalSignals();
+                        List<Signal> historicalSignals = this.GetHistoricalSignals();
                         signals = jtokens.Select(t =>
                         {
                             try
                             {
-                                var signal = t.ToObject<Signal>(signalsSerializer);
+                                Signal signal = t.ToObject<Signal>(signalsSerializer);
                                 if (signal.Pair.EndsWith(tradingService.Config.Market))
                                 {
                                     signal.Name = signalReceiver.SignalName;
 
-                                    var historicalSignal = historicalSignals?.FirstOrDefault(s => s.Pair == signal.Pair);
+                                    Signal historicalSignal = historicalSignals?.FirstOrDefault(s => s.Pair == signal.Pair);
                                     if (historicalSignal != null)
                                     {
-                                        signal.VolumeChange = CalculatePercentageChange(historicalSignal.Volume, signal.Volume);
-                                        signal.RatingChange = CalculatePercentageChange(historicalSignal.Rating, signal.Rating);
+                                        signal.VolumeChange = this.CalculatePercentageChange(historicalSignal.Volume, signal.Volume);
+                                        signal.RatingChange = this.CalculatePercentageChange(historicalSignal.Rating, signal.Rating);
                                     }
                                     return signal;
                                 }
@@ -98,7 +98,7 @@ namespace SiliconeTrader.Signals.TradingView
                             {
                                 signalsHistory.TryAdd(DateTimeOffset.Now, signals);
                                 lastSnapshotDate = DateTimeOffset.Now;
-                                CleanUpSignalsHistory();
+                                this.CleanUpSignalsHistory();
                             }
                             averageRating = signals.Any(s => s.Rating != null) ? signals.Where(s => s.Rating != null).Average(s => s.Rating) : null;
                             healthCheckService.UpdateHealthCheck($"{Constants.HealthChecks.TradingViewCryptoSignalsReceived} [{signalReceiver.SignalName}]", $"Total: {signals.Count()}");
@@ -132,7 +132,7 @@ namespace SiliconeTrader.Signals.TradingView
         {
             lock (syncRoot)
             {
-                foreach (var date in signalsHistory.Keys.OrderByDescending(d => d))
+                foreach (DateTimeOffset date in signalsHistory.Keys.OrderByDescending(d => d))
                 {
                     double elapsedMinutes = (DateTimeOffset.Now - date).TotalMinutes;
                     if (elapsedMinutes >= signalReceiver.Config.SignalPeriod && (elapsedMinutes - signalReceiver.Config.SignalPeriod) <= HISTORICAL_SIGNALS_MAX_ADDITIONAL_ELAPSED_MINUTES)
@@ -148,7 +148,7 @@ namespace SiliconeTrader.Signals.TradingView
         {
             lock (syncRoot)
             {
-                foreach (var date in signalsHistory.Keys)
+                foreach (DateTimeOffset date in signalsHistory.Keys)
                 {
                     if ((DateTimeOffset.Now - date).TotalMinutes > signalReceiver.Config.SignalPeriod + HISTORICAL_SIGNALS_ADDITIONAL_SAVE_MINUTES)
                     {
@@ -176,7 +176,7 @@ namespace SiliconeTrader.Signals.TradingView
                 }
                 else
                 {
-                    var change = Math.Abs((double)((b - a) / a * 100));
+                    double change = Math.Abs((double)((b - a) / a * 100));
                     return (a < b) ? change : change * -1;
                 }
             }

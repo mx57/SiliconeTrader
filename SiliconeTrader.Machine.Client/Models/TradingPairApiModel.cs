@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace SiliconeTrader.Machine.Client.Models
 {
-    public class TradingPairApiModel
+    public class TradingPairApiModel : BotResponse
     {
         public string Age { get; set; }
 
@@ -13,7 +13,7 @@ namespace SiliconeTrader.Machine.Client.Models
 
         public string BoughtRating { get; set; }
 
-        public IPairConfig Config { get; set; }
+        public object Config { get; set; }
 
         public string Cost { get; set; }
 

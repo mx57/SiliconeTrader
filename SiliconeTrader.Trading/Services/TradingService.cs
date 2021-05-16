@@ -17,7 +17,7 @@ namespace SiliconeTrader.Trading
 
         public override string ServiceName => Constants.ServiceNames.TradingService;
 
-        ITradingConfig ITradingService.Config => Config;
+        ITradingConfig ITradingService.Config => this.Config;
         public IModuleRules Rules { get; private set; }
         public TradingRulesConfig RulesConfig { get; private set; }
 
@@ -48,48 +48,48 @@ namespace SiliconeTrader.Trading
             this.healthCheckService = healthCheckService;
             this.tasksService = tasksService;
 
-            var isBacktesting = Application.Resolve<IBacktestingService>().Config.Enabled && Application.Resolve<IBacktestingService>().Config.Replay;
+            bool isBacktesting = Application.Resolve<IBacktestingService>().Config.Enabled && Application.Resolve<IBacktestingService>().Config.Replay;
             if (isBacktesting)
             {
                 this.Exchange = Application.ResolveOptionalNamed<IExchangeService>(Constants.ServiceNames.BacktestingExchangeService);
             }
             else
             {
-                this.Exchange = Application.ResolveOptionalNamed<IExchangeService>(Config.Exchange);
+                this.Exchange = Application.ResolveOptionalNamed<IExchangeService>(this.Config.Exchange);
             }
 
             if (this.Exchange == null)
             {
-                throw new Exception($"Unsupported exchange: {Config.Exchange}");
+                throw new Exception($"Unsupported exchange: {this.Config.Exchange}");
             }
         }
 
         public void Start()
         {
-            loggingService.Info($"Start Trading service (Virtual: {Config.VirtualTrading})...");
+            loggingService.Info($"Start Trading service (Virtual: {this.Config.VirtualTrading})...");
 
-            IsTradingSuspended = true;
+            this.IsTradingSuspended = true;
 
             orderingService = Application.Resolve<IOrderingService>();
             rulesService = Application.Resolve<IRulesService>();
-            OnTradingRulesChanged();
-            rulesService.RegisterRulesChangeCallback(OnTradingRulesChanged);
-            Exchange.Start(Config.VirtualTrading);
+            this.OnTradingRulesChanged();
+            rulesService.RegisterRulesChangeCallback(this.OnTradingRulesChanged);
+            this.Exchange.Start(this.Config.VirtualTrading);
             signalsService = Application.Resolve<ISignalsService>();
 
-            if (!Config.VirtualTrading)
+            if (!this.Config.VirtualTrading)
             {
-                Account = new ExchangeAccount(loggingService, notificationService, healthCheckService, signalsService, this);
+                this.Account = new ExchangeAccount(loggingService, notificationService, healthCheckService, signalsService, this);
             }
             else
             {
-                Account = new VirtualAccount(loggingService, notificationService, healthCheckService, signalsService, this);
+                this.Account = new VirtualAccount(loggingService, notificationService, healthCheckService, signalsService, this);
             }
 
             accountRefreshTimedTask = tasksService.AddTask(
                 name: nameof(AccountRefreshTimedTask),
                 task: new AccountRefreshTimedTask(loggingService, healthCheckService, this),
-                interval: Config.AccountRefreshInterval * 1000 / Application.Speed,
+                interval: this.Config.AccountRefreshInterval * 1000 / Application.Speed,
                 startDelay: Constants.TaskDelays.ZeroDelay,
                 startTask: false,
                 runNow: true,
@@ -103,7 +103,7 @@ namespace SiliconeTrader.Trading
             tradingTimedTask = tasksService.AddTask(
                 name: nameof(TradingTimedTask),
                 task: new TradingTimedTask(loggingService, notificationService, healthCheckService, signalsService, orderingService, this),
-                interval: Config.TradingCheckInterval * 1000 / Application.Speed,
+                interval: this.Config.TradingCheckInterval * 1000 / Application.Speed,
                 startDelay: Constants.TaskDelays.NormalDelay,
                 startTask: false,
                 runNow: false,
@@ -112,13 +112,13 @@ namespace SiliconeTrader.Trading
             tradingRulesTimedTask = tasksService.AddTask(
                 name: nameof(TradingRulesTimedTask),
                 task: new TradingRulesTimedTask(loggingService, notificationService, healthCheckService, rulesService, signalsService, this),
-                interval: RulesConfig.CheckInterval * 1000 / Application.Speed,
+                interval: this.RulesConfig.CheckInterval * 1000 / Application.Speed,
                 startDelay: Constants.TaskDelays.MidDelay,
                 startTask: false,
                 runNow: false,
                 skipIteration: 0);
 
-            IsTradingSuspended = false;
+            this.IsTradingSuspended = false;
 
             loggingService.Info("Trading service started");
         }
@@ -127,7 +127,7 @@ namespace SiliconeTrader.Trading
         {
             loggingService.Info("Stop Trading service...");
 
-            Exchange.Stop();
+            this.Exchange.Stop();
 
             if (signalsService.Config.Enabled)
             {
@@ -138,9 +138,9 @@ namespace SiliconeTrader.Trading
             tasksService.RemoveTask(nameof(TradingRulesTimedTask), stopTask: true);
             tasksService.RemoveTask(nameof(AccountRefreshTimedTask), stopTask: true);
 
-            Account.Dispose();
+            this.Account.Dispose();
 
-            rulesService.UnregisterRulesChangeCallback(OnTradingRulesChanged);
+            rulesService.UnregisterRulesChangeCallback(this.OnTradingRulesChanged);
 
             healthCheckService.RemoveHealthCheck(Constants.HealthChecks.TradingRulesProcessed);
             healthCheckService.RemoveHealthCheck(Constants.HealthChecks.TradingPairsProcessed);
@@ -150,10 +150,10 @@ namespace SiliconeTrader.Trading
 
         public void ResumeTrading(bool forced)
         {
-            if (IsTradingSuspended && (!tradingForcefullySuspended || forced))
+            if (this.IsTradingSuspended && (!tradingForcefullySuspended || forced))
             {
                 loggingService.Info("Trading started");
-                IsTradingSuspended = false;
+                this.IsTradingSuspended = false;
 
                 tradingTimedTask.Start();
                 tradingRulesTimedTask.Start();
@@ -163,10 +163,10 @@ namespace SiliconeTrader.Trading
 
         public void SuspendTrading(bool forced)
         {
-            if (!IsTradingSuspended)
+            if (!this.IsTradingSuspended)
             {
                 loggingService.Info("Trading suspended");
-                IsTradingSuspended = true;
+                this.IsTradingSuspended = true;
                 tradingForcefullySuspended = forced;
 
                 tradingRulesTimedTask.Stop();
@@ -189,27 +189,27 @@ namespace SiliconeTrader.Trading
         {
             lock (syncRoot)
             {
-                PauseTasks();
+                this.PauseTasks();
                 try
                 {
                     IRule rule = signalsService.Rules.Entries.FirstOrDefault(r => r.Name == options.Metadata.SignalRule);
                     RuleAction ruleAction = rule?.Action ?? RuleAction.Default;
-                    IPairConfig pairConfig = GetPairConfig(options.Pair);
+                    IPairConfig pairConfig = this.GetPairConfig(options.Pair);
 
                     bool arbitragePair = pairConfig.ArbitrageEnabled && pairConfig.ArbitrageSignalRules.Contains(options.Metadata.SignalRule);
                     if (arbitragePair)
                     {
-                        Arbitrage arbitrage = Exchange.GetArbitrage(options.Pair, Config.Market, pairConfig.ArbitrageMarkets, pairConfig.ArbitrageType);
+                        Arbitrage arbitrage = this.Exchange.GetArbitrage(options.Pair, this.Config.Market, pairConfig.ArbitrageMarkets, pairConfig.ArbitrageType);
                         if (arbitrage.IsAssigned)
                         {
-                            Arbitrage(new ArbitrageOptions(options.Pair, arbitrage, options.Metadata));
+                            this.Arbitrage(new ArbitrageOptions(options.Pair, arbitrage, options.Metadata));
                         }
                     }
                     else
                     {
-                        ITradingPair swappedPair = Account.GetTradingPairs().OrderBy(p => p.CurrentMargin).FirstOrDefault(tradingPair =>
+                        ITradingPair swappedPair = this.Account.GetTradingPairs().OrderBy(p => p.CurrentMargin).FirstOrDefault(tradingPair =>
                         {
-                            IPairConfig tradingPairConfig = GetPairConfig(tradingPair.Pair);
+                            IPairConfig tradingPairConfig = this.GetPairConfig(tradingPair.Pair);
                             return tradingPairConfig.SellEnabled && tradingPairConfig.SwapEnabled && tradingPairConfig.SwapSignalRules != null &&
                                    tradingPairConfig.SwapSignalRules.Contains(options.Metadata.SignalRule) &&
                                    tradingPairConfig.SwapTimeout < (DateTimeOffset.Now - tradingPair.OrderDates.DefaultIfEmpty().Max()).TotalSeconds;
@@ -217,11 +217,11 @@ namespace SiliconeTrader.Trading
 
                         if (swappedPair != null)
                         {
-                            Swap(new SwapOptions(swappedPair.Pair, options.Pair, options.Metadata));
+                            this.Swap(new SwapOptions(swappedPair.Pair, options.Pair, options.Metadata));
                         }
                         else if (ruleAction == RuleAction.Default)
                         {
-                            if (CanBuy(options, out string message))
+                            if (this.CanBuy(options, out string message))
                             {
                                 tradingTimedTask.InitiateBuy(options);
                             }
@@ -234,7 +234,7 @@ namespace SiliconeTrader.Trading
                 }
                 finally
                 {
-                    ContinueTasks();
+                    this.ContinueTasks();
                 }
             }
         }
@@ -243,10 +243,10 @@ namespace SiliconeTrader.Trading
         {
             lock (syncRoot)
             {
-                PauseTasks();
+                this.PauseTasks();
                 try
                 {
-                    if (CanSell(options, out string message))
+                    if (this.CanSell(options, out string message))
                     {
                         tradingTimedTask.InitiateSell(options);
                     }
@@ -257,7 +257,7 @@ namespace SiliconeTrader.Trading
                 }
                 finally
                 {
-                    ContinueTasks();
+                    this.ContinueTasks();
                 }
             }
         }
@@ -266,12 +266,12 @@ namespace SiliconeTrader.Trading
         {
             lock (syncRoot)
             {
-                PauseTasks();
+                this.PauseTasks();
                 try
                 {
-                    if (CanSwap(options, out string message))
+                    if (this.CanSwap(options, out string message))
                     {
-                        ITradingPair oldTradingPair = Account.GetTradingPair(options.OldPair);
+                        ITradingPair oldTradingPair = this.Account.GetTradingPair(options.OldPair);
                         var sellOptions = new SellOptions(options.OldPair)
                         {
                             Swap = true,
@@ -279,14 +279,14 @@ namespace SiliconeTrader.Trading
                             Metadata = new OrderMetadata { SwapPair = options.NewPair }
                         };
 
-                        if (CanSell(sellOptions, out message))
+                        if (this.CanSell(sellOptions, out message))
                         {
                             decimal currentMargin = oldTradingPair.CurrentMargin;
                             decimal additionalCosts = oldTradingPair.Cost - oldTradingPair.CurrentCost + (oldTradingPair.Metadata.AdditionalCosts ?? 0);
                             int additionalDCALevels = oldTradingPair.DCALevel;
 
                             IOrderDetails sellOrderDetails = orderingService.PlaceSellOrder(sellOptions);
-                            if (!Account.HasTradingPair(options.OldPair))
+                            if (!this.Account.HasTradingPair(options.OldPair))
                             {
                                 var buyOptions = new BuyOptions(options.NewPair)
                                 {
@@ -301,10 +301,10 @@ namespace SiliconeTrader.Trading
                                 buyOptions.Metadata.AdditionalCosts = additionalCosts;
                                 IOrderDetails buyOrderDetails = orderingService.PlaceBuyOrder(buyOptions);
 
-                                var newTradingPair = Account.GetTradingPair(options.NewPair) as TradingPair;
+                                var newTradingPair = this.Account.GetTradingPair(options.NewPair) as TradingPair;
                                 if (newTradingPair != null)
                                 {
-                                    newTradingPair.Metadata.AdditionalCosts += CalculateOrderFees(sellOrderDetails);
+                                    newTradingPair.Metadata.AdditionalCosts += this.CalculateOrderFees(sellOrderDetails);
                                     loggingService.Info($"Swap {oldTradingPair.FormattedName} for {newTradingPair.FormattedName}. " +
                                         $"Old margin: {oldTradingPair.CurrentMargin:0.00}, new margin: {newTradingPair.CurrentMargin:0.00}");
                                 }
@@ -331,7 +331,7 @@ namespace SiliconeTrader.Trading
                 }
                 finally
                 {
-                    ContinueTasks();
+                    this.ContinueTasks();
                 }
             }
         }
@@ -340,12 +340,12 @@ namespace SiliconeTrader.Trading
         {
             lock (syncRoot)
             {
-                PauseTasks();
+                this.PauseTasks();
                 try
                 {
-                    if (CanArbitrage(options, out string message))
+                    if (this.CanArbitrage(options, out string message))
                     {
-                        if (CanBuy(new BuyOptions(options.Pair) { Amount = 1 }, out message))
+                        if (this.CanBuy(new BuyOptions(options.Pair) { Amount = 1 }, out message))
                         {
                             options.Metadata.Arbitrage = $"{options.Arbitrage.Market}-" + options.Arbitrage.Type ?? "All";
                             options.Metadata.ArbitragePercentage = options.Arbitrage.Percentage;
@@ -353,11 +353,11 @@ namespace SiliconeTrader.Trading
 
                             if (options.Arbitrage.Type == ArbitrageType.Direct)
                             {
-                                ArbitrageDirect(options);
+                                this.ArbitrageDirect(options);
                             }
                             else if (options.Arbitrage.Type == ArbitrageType.Reverse)
                             {
-                                ArbitrageReverse(options);
+                                this.ArbitrageReverse(options);
                             }
                         }
                         else
@@ -372,7 +372,7 @@ namespace SiliconeTrader.Trading
                 }
                 finally
                 {
-                    ContinueTasks();
+                    this.ContinueTasks();
                 }
             }
         }
@@ -380,8 +380,8 @@ namespace SiliconeTrader.Trading
         private void ArbitrageDirect(ArbitrageOptions options)
         {
             string arbitragePair = options.Pair;
-            ITradingPair existingArbitragePair = Account.GetTradingPair(arbitragePair);
-            IPairConfig pairConfig = GetPairConfig(options.Pair);
+            ITradingPair existingArbitragePair = this.Account.GetTradingPair(arbitragePair);
+            IPairConfig pairConfig = this.GetPairConfig(options.Pair);
             bool useExistingArbitragePair = (existingArbitragePair != null && existingArbitragePair.CurrentCost > pairConfig.BuyMaxCost &&
                                             existingArbitragePair.AveragePrice <= existingArbitragePair.CurrentPrice);
 
@@ -394,13 +394,13 @@ namespace SiliconeTrader.Trading
                 Metadata = options.Metadata
             };
 
-            if (CanBuy(buyArbitragePairOptions, out string message))
+            if (this.CanBuy(buyArbitragePairOptions, out string message))
             {
                 IOrderDetails buyArbitragePairOrderDetails = null;
                 if (useExistingArbitragePair)
                 {
-                    buyArbitragePairOrderDetails = Account.AddBlankOrder(buyArbitragePairOptions.Pair,
-                        buyArbitragePairOptions.MaxCost.Value / GetPrice(buyArbitragePairOptions.Pair, TradePriceType.Ask),
+                    buyArbitragePairOrderDetails = this.Account.AddBlankOrder(buyArbitragePairOptions.Pair,
+                        buyArbitragePairOptions.MaxCost.Value / this.GetPrice(buyArbitragePairOptions.Pair, TradePriceType.Ask),
                         includeFees: false);
                     loggingService.Info($"Use existing arbitrage pair for arbitrage: {arbitragePair}. " +
                         $"Average price: {existingArbitragePair.AveragePrice}, Current price: {existingArbitragePair.CurrentPrice}");
@@ -412,8 +412,8 @@ namespace SiliconeTrader.Trading
 
                 if (buyArbitragePairOrderDetails.Result == OrderResult.Filled)
                 {
-                    decimal buyArbitragePairFees = CalculateOrderFees(buyArbitragePairOrderDetails);
-                    string flippedArbitragePair = Exchange.ChangeMarket(arbitragePair, options.Arbitrage.Market.ToString());
+                    decimal buyArbitragePairFees = this.CalculateOrderFees(buyArbitragePairOrderDetails);
+                    string flippedArbitragePair = this.Exchange.ChangeMarket(arbitragePair, options.Arbitrage.Market.ToString());
                     var sellArbitragePairOptions = new SellOptions(flippedArbitragePair)
                     {
                         Arbitrage = true,
@@ -429,10 +429,10 @@ namespace SiliconeTrader.Trading
                     if (sellArbitragePairOrderDetails.Result == OrderResult.Filled)
                     {
                         decimal sellArbitragePairMultiplier = pairConfig.ArbitrageSellMultiplier ?? DEFAULT_ARBITRAGE_SELL_MULTIPLIER;
-                        decimal sellArbitragePairFees = CalculateOrderFees(sellArbitragePairOrderDetails);
+                        decimal sellArbitragePairFees = this.CalculateOrderFees(sellArbitragePairOrderDetails);
                         options.Metadata.FeesNonDeductible = buyArbitragePairFees  * sellArbitragePairMultiplier;
-                        decimal sellMarketPairAmount = sellArbitragePairOrderDetails.AmountFilled * GetPrice(flippedArbitragePair, TradePriceType.Bid, normalize: false) * sellArbitragePairMultiplier;
-                        string marketPair = Exchange.GetArbitrageMarketPair(options.Arbitrage.Market);
+                        decimal sellMarketPairAmount = sellArbitragePairOrderDetails.AmountFilled * this.GetPrice(flippedArbitragePair, TradePriceType.Bid, normalize: false) * sellArbitragePairMultiplier;
+                        string marketPair = this.Exchange.GetArbitrageMarketPair(options.Arbitrage.Market);
 
                         var sellMarketPairOptions = new SellOptions(marketPair)
                         {
@@ -446,7 +446,7 @@ namespace SiliconeTrader.Trading
                             })
                         };
 
-                        existingArbitragePair = Account.GetTradingPair(marketPair);
+                        existingArbitragePair = this.Account.GetTradingPair(marketPair);
                         existingArbitragePair.OverrideCost((buyArbitragePairOrderDetails.Cost + sellArbitragePairFees * 2) * sellArbitragePairMultiplier);
                         IOrderDetails sellMarketPairOrderDetails = orderingService.PlaceSellOrder(sellMarketPairOptions);
                         existingArbitragePair.OverrideCost(null);
@@ -480,9 +480,9 @@ namespace SiliconeTrader.Trading
 
         private void ArbitrageReverse(ArbitrageOptions options)
         {
-            string marketPair = Exchange.GetArbitrageMarketPair(options.Arbitrage.Market);
-            ITradingPair existingMarketPair = Account.GetTradingPair(marketPair);
-            IPairConfig pairConfig = GetPairConfig(options.Pair);
+            string marketPair = this.Exchange.GetArbitrageMarketPair(options.Arbitrage.Market);
+            ITradingPair existingMarketPair = this.Account.GetTradingPair(marketPair);
+            IPairConfig pairConfig = this.GetPairConfig(options.Pair);
             bool useExistingMarketPair = (existingMarketPair != null && existingMarketPair.CurrentCost > pairConfig.BuyMaxCost &&
                                          existingMarketPair.AveragePrice <= existingMarketPair.CurrentPrice);
 
@@ -495,13 +495,13 @@ namespace SiliconeTrader.Trading
                 Metadata = options.Metadata
             };
 
-            if (CanBuy(buyMarketPairOptions, out string message))
+            if (this.CanBuy(buyMarketPairOptions, out string message))
             {
                 IOrderDetails buyMarketPairOrderDetails = null;
                 if (useExistingMarketPair)
                 {
-                    buyMarketPairOrderDetails = Account.AddBlankOrder(buyMarketPairOptions.Pair,
-                        buyMarketPairOptions.MaxCost.Value / GetPrice(buyMarketPairOptions.Pair, TradePriceType.Ask),
+                    buyMarketPairOrderDetails = this.Account.AddBlankOrder(buyMarketPairOptions.Pair,
+                        buyMarketPairOptions.MaxCost.Value / this.GetPrice(buyMarketPairOptions.Pair, TradePriceType.Ask),
                         includeFees: false);
                     loggingService.Info($"Use existing market pair for arbitrage: {marketPair}. " +
                         $"Average price: {existingMarketPair.AveragePrice}, Current price: {existingMarketPair.CurrentPrice}");
@@ -514,11 +514,11 @@ namespace SiliconeTrader.Trading
                 if (buyMarketPairOrderDetails.Result == OrderResult.Filled)
                 {
                     decimal buyArbitragePairMultiplier = pairConfig.ArbitrageBuyMultiplier ?? DEFAULT_ARBITRAGE_BUY_MULTIPLIER;
-                    decimal buyMarketPairFees = CalculateOrderFees(buyMarketPairOrderDetails);
-                    string arbitragePair = Exchange.ChangeMarket(options.Pair, options.Arbitrage.Market.ToString());
+                    decimal buyMarketPairFees = this.CalculateOrderFees(buyMarketPairOrderDetails);
+                    string arbitragePair = this.Exchange.ChangeMarket(options.Pair, options.Arbitrage.Market.ToString());
                     decimal buyArbitragePairAmount = options.Arbitrage.Market == ArbitrageMarket.USDT ?
-                        buyMarketPairOrderDetails.AmountFilled * GetPrice(buyMarketPairOrderDetails.Pair, TradePriceType.Ask, normalize: false) / GetPrice(arbitragePair, TradePriceType.Ask) :
-                        buyMarketPairOrderDetails.AmountFilled / GetPrice(arbitragePair, TradePriceType.Ask);
+                        buyMarketPairOrderDetails.AmountFilled * this.GetPrice(buyMarketPairOrderDetails.Pair, TradePriceType.Ask, normalize: false) / this.GetPrice(arbitragePair, TradePriceType.Ask) :
+                        buyMarketPairOrderDetails.AmountFilled / this.GetPrice(arbitragePair, TradePriceType.Ask);
 
                     var buyArbitragePairOptions = new BuyOptions(arbitragePair)
                     {
@@ -531,7 +531,7 @@ namespace SiliconeTrader.Trading
                     IOrderDetails buyArbitragePairOrderDetails = orderingService.PlaceBuyOrder(buyArbitragePairOptions);
                     if (buyArbitragePairOrderDetails.Result == OrderResult.Filled)
                     {
-                        decimal buyArbitragePairFees = CalculateOrderFees(buyArbitragePairOrderDetails);
+                        decimal buyArbitragePairFees = this.CalculateOrderFees(buyArbitragePairOrderDetails);
                         options.Metadata.FeesNonDeductible = buyMarketPairFees * buyArbitragePairMultiplier;
                         var sellArbitragePairOptions = new SellOptions(buyArbitragePairOrderDetails.Pair)
                         {
@@ -541,7 +541,7 @@ namespace SiliconeTrader.Trading
                             Metadata = options.Metadata
                         };
 
-                        TradingPair existingArbitragePair = Account.GetTradingPair(buyArbitragePairOrderDetails.Pair) as TradingPair;
+                        TradingPair existingArbitragePair = this.Account.GetTradingPair(buyArbitragePairOrderDetails.Pair) as TradingPair;
                         existingArbitragePair.OverrideCost(buyArbitragePairOrderDetails.Cost + buyArbitragePairFees * 2);
                         IOrderDetails sellArbitragePairOrderDetails = orderingService.PlaceSellOrder(sellArbitragePairOptions);
                         existingArbitragePair.OverrideCost(null);
@@ -575,9 +575,9 @@ namespace SiliconeTrader.Trading
 
         public bool CanBuy(BuyOptions options, out string message)
         {
-            IPairConfig pairConfig = GetPairConfig(options.Pair);
+            IPairConfig pairConfig = this.GetPairConfig(options.Pair);
 
-            if (!options.ManualOrder && !options.Swap && IsTradingSuspended)
+            if (!options.ManualOrder && !options.Swap && this.IsTradingSuspended)
             {
                 message = $"Cancel buy request for {options.Pair}. Reason: trading suspended";
                 return false;
@@ -587,22 +587,22 @@ namespace SiliconeTrader.Trading
                 message = $"Cancel buy request for {options.Pair}. Reason: buying not enabled";
                 return false;
             }
-            else if (!options.ManualOrder && Config.ExcludedPairs.Contains(options.Pair))
+            else if (!options.ManualOrder && this.Config.ExcludedPairs.Contains(options.Pair))
             {
                 message = $"Cancel buy request for {options.Pair}. Reason: exluded pair";
                 return false;
             }
-            else if (!options.ManualOrder && !options.Arbitrage && !options.IgnoreExisting && Account.HasTradingPair(options.Pair))
+            else if (!options.ManualOrder && !options.Arbitrage && !options.IgnoreExisting && this.Account.HasTradingPair(options.Pair))
             {
                 message = $"Cancel buy request for {options.Pair}. Reason: pair already exists";
                 return false;
             }
-            else if (!options.ManualOrder && !options.Swap && !options.Arbitrage && pairConfig.MaxPairs != 0 && Account.GetTradingPairs().Count() >= pairConfig.MaxPairs && !Account.HasTradingPair(options.Pair))
+            else if (!options.ManualOrder && !options.Swap && !options.Arbitrage && pairConfig.MaxPairs != 0 && this.Account.GetTradingPairs().Count() >= pairConfig.MaxPairs && !this.Account.HasTradingPair(options.Pair))
             {
                 message = $"Cancel buy request for {options.Pair}. Reason: maximum pairs reached";
                 return false;
             }
-            else if (!options.ManualOrder && !options.Swap && !options.IgnoreBalance && pairConfig.BuyMinBalance != 0 && (Account.GetBalance() - options.MaxCost) < pairConfig.BuyMinBalance && Exchange.GetPairMarket(options.Pair) == Config.Market)
+            else if (!options.ManualOrder && !options.Swap && !options.IgnoreBalance && pairConfig.BuyMinBalance != 0 && (this.Account.GetBalance() - options.MaxCost) < pairConfig.BuyMinBalance && this.Exchange.GetPairMarket(options.Pair) == this.Config.Market)
             {
                 message = $"Cancel buy request for {options.Pair}. Reason: minimum balance reached";
                 return false;
@@ -617,7 +617,7 @@ namespace SiliconeTrader.Trading
                 message = $"Cancel buy request for {options.Pair}. Reason: invalid amount";
                 return false;
             }
-            else if (!options.IgnoreBalance && Account.GetBalance() < options.MaxCost && Exchange.GetPairMarket(options.Pair) == Config.Market)
+            else if (!options.IgnoreBalance && this.Account.GetBalance() < options.MaxCost && this.Exchange.GetPairMarket(options.Pair) == this.Config.Market)
             {
                 message = $"Cancel buy request for {options.Pair}. Reason: not enough balance";
                 return false;
@@ -627,10 +627,10 @@ namespace SiliconeTrader.Trading
                 message = $"Cancel buy request for {options.Pair}. Reason: either max cost or amount needs to be specified (not both)";
             }
             else if (!options.ManualOrder && !options.Swap && !options.Arbitrage && pairConfig.BuySamePairTimeout > 0 &&
-                OrderHistory.Any(h => h.Side == OrderSide.Buy && (h.Pair == options.Pair || h.Pair == h.OriginalPair)) &&
-                (DateTimeOffset.Now - OrderHistory.Where(h => (h.Pair == options.Pair || h.Pair == h.OriginalPair)).Max(h => h.Date)).TotalSeconds < pairConfig.BuySamePairTimeout)
+                this.OrderHistory.Any(h => h.Side == OrderSide.Buy && (h.Pair == options.Pair || h.Pair == h.OriginalPair)) &&
+                (DateTimeOffset.Now - this.OrderHistory.Where(h => (h.Pair == options.Pair || h.Pair == h.OriginalPair)).Max(h => h.Date)).TotalSeconds < pairConfig.BuySamePairTimeout)
             {
-                var elapsedSeconds = (DateTimeOffset.Now - OrderHistory.Where(h => (h.Pair == options.Pair || h.Pair == h.OriginalPair)).Max(h => h.Date)).TotalSeconds;
+                double elapsedSeconds = (DateTimeOffset.Now - this.OrderHistory.Where(h => (h.Pair == options.Pair || h.Pair == h.OriginalPair)).Max(h => h.Date)).TotalSeconds;
                 message = $"Cancel buy request for {options.Pair}. Reason: buy same pair timeout (elapsed: {elapsedSeconds:0.#}, timeout: {pairConfig.BuySamePairTimeout:0.#})";
                 return false;
             }
@@ -641,9 +641,9 @@ namespace SiliconeTrader.Trading
 
         public bool CanSell(SellOptions options, out string message)
         {
-            IPairConfig pairConfig = GetPairConfig(options.Pair);
+            IPairConfig pairConfig = this.GetPairConfig(options.Pair);
 
-            if (!options.ManualOrder && !options.Arbitrage && IsTradingSuspended)
+            if (!options.ManualOrder && !options.Arbitrage && this.IsTradingSuspended)
             {
                 message = $"Cancel sell request for {options.Pair}. Reason: trading suspended";
                 return false;
@@ -653,12 +653,12 @@ namespace SiliconeTrader.Trading
                 message = $"Cancel sell request for {options.Pair}. Reason: selling not enabled";
                 return false;
             }
-            else if (!options.ManualOrder && !options.Arbitrage && Config.ExcludedPairs.Contains(options.Pair))
+            else if (!options.ManualOrder && !options.Arbitrage && this.Config.ExcludedPairs.Contains(options.Pair))
             {
                 message = $"Cancel sell request for {options.Pair}. Reason: excluded pair";
                 return false;
             }
-            else if (!Account.HasTradingPair(options.Pair, includeDust: true) && !Account.HasTradingPair(NormalizePair(options.Pair), includeDust: true))
+            else if (!this.Account.HasTradingPair(options.Pair, includeDust: true) && !this.Account.HasTradingPair(this.NormalizePair(options.Pair), includeDust: true))
             {
                 message = $"Cancel sell request for {options.Pair}. Reason: pair does not exist";
                 return false;
@@ -673,12 +673,12 @@ namespace SiliconeTrader.Trading
                 message = $"Cancel sell request for {options.Pair}. Reason: invalid amount";
                 return false;
             }
-            else if (options.Amount != null && options.Price != null && (options.Amount * options.Price) < Config.MinCost)
+            else if (options.Amount != null && options.Price != null && (options.Amount * options.Price) < this.Config.MinCost)
             {
                 message = $"Cancel sell request for {options.Pair}. Reason: dust";
                 return false;
             }
-            else if (!options.ManualOrder && !options.Arbitrage && (DateTimeOffset.Now - Account.GetTradingPair(options.Pair, includeDust: true).OrderDates.DefaultIfEmpty().Max()).
+            else if (!options.ManualOrder && !options.Arbitrage && (DateTimeOffset.Now - this.Account.GetTradingPair(options.Pair, includeDust: true).OrderDates.DefaultIfEmpty().Max()).
                 TotalMilliseconds < (MIN_INTERVAL_BETWEEN_BUY_AND_SELL / Application.Speed))
             {
                 message = $"Cancel sell request for {options.Pair}. Reason: pair just bought";
@@ -690,32 +690,32 @@ namespace SiliconeTrader.Trading
 
         public bool CanSwap(SwapOptions options, out string message)
         {
-            if (!Account.HasTradingPair(options.OldPair))
+            if (!this.Account.HasTradingPair(options.OldPair))
             {
                 message = $"Cancel swap request {options.OldPair} for {options.NewPair}. Reason: pair does not exist";
                 return false;
             }
-            else if (Account.HasTradingPair(options.NewPair))
+            else if (this.Account.HasTradingPair(options.NewPair))
             {
                 message = $"Cancel swap request {options.OldPair} for {options.NewPair}. Reason: pair already exists";
                 return false;
             }
-            else if (!options.ManualOrder && !GetPairConfig(options.OldPair).SellEnabled)
+            else if (!options.ManualOrder && !this.GetPairConfig(options.OldPair).SellEnabled)
             {
                 message = $"Cancel swap request {options.OldPair} for {options.NewPair}. Reason: selling not enabled";
                 return false;
             }
-            else if (!options.ManualOrder && !GetPairConfig(options.NewPair).BuyEnabled)
+            else if (!options.ManualOrder && !this.GetPairConfig(options.NewPair).BuyEnabled)
             {
                 message = $"Cancel swap request {options.OldPair} for {options.NewPair}. Reason: buying not enabled";
                 return false;
             }
-            else if (Account.GetBalance() < Account.GetTradingPair(options.OldPair).CurrentCost * 0.01M)
+            else if (this.Account.GetBalance() < this.Account.GetTradingPair(options.OldPair).CurrentCost * 0.01M)
             {
                 message = $"Cancel swap request {options.OldPair} for {options.NewPair}. Reason: not enough balance";
                 return false;
             }
-            else if (!Exchange.GetMarketPairs(Config.Market).Contains(options.NewPair))
+            else if (!this.Exchange.GetMarketPairs(this.Config.Market).Contains(options.NewPair))
             {
                 message = $"Cancel swap request {options.OldPair} for {options.NewPair}. Reason: {options.NewPair} is not a valid pair";
                 return false;
@@ -727,17 +727,17 @@ namespace SiliconeTrader.Trading
 
         public bool CanArbitrage(ArbitrageOptions options, out string message)
         {
-            if (Account.HasTradingPair(options.Pair))
+            if (this.Account.HasTradingPair(options.Pair))
             {
                 message = $"Cancel arbitrage request {options.Pair}. Reason: pair already exist";
                 return false;
             }
-            else if (!options.ManualOrder && !GetPairConfig(options.Pair).BuyEnabled)
+            else if (!options.ManualOrder && !this.GetPairConfig(options.Pair).BuyEnabled)
             {
                 message = $"Cancel arbitrage request for {options.Pair}. Reason: buying not enabled";
                 return false;
             }
-            else if (!Exchange.GetMarketPairs(Config.Market).Contains(options.Pair))
+            else if (!this.Exchange.GetMarketPairs(this.Config.Market).Contains(options.Pair))
             {
                 message = $"Cancel arbitrage request for {options.Pair}. Reason: {options.Pair} is not a valid pair";
                 return false;
@@ -751,12 +751,12 @@ namespace SiliconeTrader.Trading
         {
             if (normalize)
             {
-                if (pair == Config.Market + Constants.Markets.USDT)
+                if (pair == this.Config.Market + Constants.Markets.USDT)
                 {
                     return 1;
                 }
             }
-            return Exchange.GetPrice(pair, priceType ?? Config.TradePriceType);
+            return this.Exchange.GetPrice(pair, priceType ?? this.Config.TradePriceType);
         }
 
         public decimal CalculateOrderFees(IOrderDetails order)
@@ -764,14 +764,14 @@ namespace SiliconeTrader.Trading
             decimal orderFees = 0;
             if (order.Fees != 0 && order.FeesCurrency != null)
             {
-                if (order.FeesCurrency == Config.Market)
+                if (order.FeesCurrency == this.Config.Market)
                 {
                     orderFees = order.Fees;
                 }
                 else
                 {
-                    string feesPair = order.FeesCurrency + Config.Market;
-                    orderFees = GetPrice(feesPair, TradePriceType.Ask) * order.Fees;
+                    string feesPair = order.FeesCurrency + this.Config.Market;
+                    orderFees = this.GetPrice(feesPair, TradePriceType.Ask) * order.Fees;
                 }
             }
             return orderFees;
@@ -779,17 +779,17 @@ namespace SiliconeTrader.Trading
 
         public bool IsNormalizedPair(string pair)
         {
-            return Exchange.GetPairMarket(pair) == Config.Market;
+            return this.Exchange.GetPairMarket(pair) == this.Config.Market;
         }
 
         public string NormalizePair(string pair)
         {
-            return Exchange.ChangeMarket(pair, Config.Market);
+            return this.Exchange.ChangeMarket(pair, this.Config.Market);
         }
 
         public void LogOrder(IOrderDetails order)
         {
-            OrderHistory.Push(order);
+            this.OrderHistory.Push(order);
         }
 
         public List<string> GetTrailingBuys()
@@ -814,20 +814,20 @@ namespace SiliconeTrader.Trading
 
         private void OnTradingRulesChanged()
         {
-            Rules = rulesService.GetRules(ServiceName);
-            RulesConfig = Rules.GetConfiguration<TradingRulesConfig>();
+            this.Rules = rulesService.GetRules(this.ServiceName);
+            this.RulesConfig = this.Rules.GetConfiguration<TradingRulesConfig>();
         }
 
         protected override void PrepareConfig()
         {
-            if (Config.ExcludedPairs == null)
+            if (this.Config.ExcludedPairs == null)
             {
-                Config.ExcludedPairs = new List<string>();
+                this.Config.ExcludedPairs = new List<string>();
             }
 
-            if (Config.DCALevels == null)
+            if (this.Config.DCALevels == null)
             {
-                Config.DCALevels = new List<DCALevel>();
+                this.Config.DCALevels = new List<DCALevel>();
             }
         }
 

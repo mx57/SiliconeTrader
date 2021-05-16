@@ -2,7 +2,7 @@ var table = null;
 $(function () {
     table = $('#tradingPairsTable').DataTable({
         ajax: {
-            url: "TradingPairs",
+            url: "Data/TradingPairs",
             type: "POST",
             dataSrc: ""
         },
@@ -15,7 +15,7 @@ $(function () {
             },
             {
                 name: "Name",
-                data: "Name",
+                data: "name",
                 render: function (data, type, row, meta) {
                     return '<a href="https://www.tradingview.com/chart/?symbol=' + row.TradingViewName + '" target = "_blank" class="btn btn-outline-info btn-sm">' + data + '</a>';
                 },
@@ -23,7 +23,7 @@ $(function () {
             },
             {
                 name: "FormattedName",
-                data: "Name",
+                data: "name",
                 render: function (data, type, row, meta) {
                     var element = '<div style="width: 120px"><a href="https://www.tradingview.com/chart/?symbol=' + row.TradingViewName + '" target = "_blank" class="btn btn-outline-info btn-sm">' + data + '</a>';
                     if (row.DCA > 0) {
@@ -35,12 +35,12 @@ $(function () {
             },
             {
                 name: "DCA",
-                data: "DCA",
+                data: "dca",
                 visible: false
             },
             {
                 name: "Margin",
-                data: "Margin",
+                data: "margin",
                 render: function (data, type, row, meta) {
                     var element = "";
                     if (parseFloat(data) >= 0) {
@@ -60,11 +60,11 @@ $(function () {
             },
             {
                 name: "Target",
-                data: "Target"
+                data: "target"
             },
             {
                 name: "CurrentRating",
-                data: "CurrentRating",
+                data: "currentRating",
                 render: function (data, type, row, meta) {
                     var element = "";
                     if (parseFloat(data) >= parseFloat(row.BoughtRating)) {
@@ -78,52 +78,52 @@ $(function () {
             },
             {
                 name: "BoughtRating",
-                data: "BoughtRating"
+                data: "boughtRating"
             },
             {
                 name: "Age",
-                data: "Age"
+                data: "age"
             },
             {
                 name: "Amount",
-                data: "Amount"
+                data: "amount"
             },
             {
                 name: "CurrentCost",
-                data: "CurrentCost"
+                data: "currentCost"
             },
             {
                 name: "Cost",
-                data: "Cost"
+                data: "cost"
             },
             {
                 name: "CurrentPrice",
-                data: "CurrentPrice"
+                data: "currentPrice"
             },
             {
                 name: "BoughtPrice",
-                data: "BoughtPrice"
+                data: "boughtPrice"
             },
             {
                 name: "CurrentSpread",
-                data: "CurrentSpread"
+                data: "currentSpread"
             },
             {
                 name: "SignalRule",
-                data: "SignalRule"
+                data: "signalRule"
             },
             {
                 Name: "TradingRules",
-                data: "TradingRules"
+                data: "tradingRules"
             },
             {
                 name: "OrderDates",
-                data: "OrderDates",
+                data: "orderDates",
                 visible: false
             },
             {
                 name: "OrderIds",
-                data: "OrderIds",
+                data: "orderIds",
                 visible: false
             }
         ],
@@ -236,7 +236,7 @@ function sellPair(e) {
     var pair = $(e).closest(".row-details").find("#pair").val();
     var amount = $(e).parent().find("#amount").val();
     if (confirm("Sell " + amount + " " + pair + "?")) {
-        $.post("Sell", { pair: pair, amount: amount }, function (data) {
+        $.post("/Orders/Sell", { pair: pair, amount: amount }, function (data) {
             var tr = $(e).closest('tr').prev();
             var row = table.row(tr);
             hideRow(row);
@@ -251,7 +251,7 @@ function buyPair(e) {
     var pair = $(e).closest(".row-details").find("#pair").val();
     var amount = $(e).parent().find("#amount").val();
     if (confirm("Buy " + amount + " " + pair + "?")) {
-        $.post("Buy", { pair: pair, amount: amount }, function (data) {
+        $.post("/Orders/Buy", { pair: pair, amount: amount }, function (data) {
             var tr = $(e).closest('tr').prev();
             var row = table.row(tr);
             hideRow(row);
@@ -266,7 +266,7 @@ function swapPair(e) {
     var pair = $(e).closest(".row-details").find("#pair").val();
     var swap = prompt("Enter a pair to swap " + pair + " for");
     if (swap) {
-        $.post("Swap", { pair: pair, swap: swap }, function (data) {
+        $.post("/Orders/Swap", { pair: pair, swap: swap }, function (data) {
             var tr = $(e).closest('tr').prev();
             var row = table.row(tr);
             hideRow(row);

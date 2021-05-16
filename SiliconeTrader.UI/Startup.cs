@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SiliconeTrader.Machine.Client;
+using SiliconeTrader.Machine.Client.Core;
 using SiliconeTrader.UI.Data;
 
 namespace SiliconeTrader.UI
@@ -16,7 +17,7 @@ namespace SiliconeTrader.UI
     {
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            this.Configuration = configuration;
         }
 
         public IConfiguration Configuration { get; }
@@ -76,14 +77,14 @@ namespace SiliconeTrader.UI
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection")));
+                    this.Configuration.GetConnectionString("DefaultConnection")));
             services.AddDatabaseDeveloperPageExceptionFilter();
 
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddControllersWithViews();
 
-            services.AddTradingBotClient<RestClient, ModelConverter>(Configuration);
+            services.AddTradingBotClient<RestClient, ModelConverter>(this.Configuration);
         }
     }
 }

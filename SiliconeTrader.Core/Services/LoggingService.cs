@@ -25,9 +25,9 @@ namespace SiliconeTrader.Core
 
         public LoggingService()
         {
-            if (Config.Enabled)
+            if (this.Config.Enabled)
             {
-                logger = CreateLogger();
+                logger = this.CreateLogger();
             }
         }
 
@@ -35,10 +35,10 @@ namespace SiliconeTrader.Core
         {
             lock (syncRoot)
             {
-                if (Config.Enabled)
+                if (this.Config.Enabled)
                 {
                     logger.Verbose(exception, message);
-                    CleanUpOldLogEntries();
+                    this.CleanUpOldLogEntries();
                 }
             }
         }
@@ -47,10 +47,10 @@ namespace SiliconeTrader.Core
         {
             lock (syncRoot)
             {
-                if (Config.Enabled)
+                if (this.Config.Enabled)
                 {
                     logger.Verbose(message, propertyValues);
-                    CleanUpOldLogEntries();
+                    this.CleanUpOldLogEntries();
                 }
             }
         }
@@ -59,10 +59,10 @@ namespace SiliconeTrader.Core
         {
             lock (syncRoot)
             {
-                if (Config.Enabled)
+                if (this.Config.Enabled)
                 {
                     logger.Debug(exception, message);
-                    CleanUpOldLogEntries();
+                    this.CleanUpOldLogEntries();
                 }
             }
         }
@@ -71,10 +71,10 @@ namespace SiliconeTrader.Core
         {
             lock (syncRoot)
             {
-                if (Config.Enabled)
+                if (this.Config.Enabled)
                 {
                     logger.Debug(message, propertyValues);
-                    CleanUpOldLogEntries();
+                    this.CleanUpOldLogEntries();
                 }
             }
         }
@@ -83,10 +83,10 @@ namespace SiliconeTrader.Core
         {
             lock (syncRoot)
             {
-                if (Config.Enabled)
+                if (this.Config.Enabled)
                 {
                     logger.Information(exception, message);
-                    CleanUpOldLogEntries();
+                    this.CleanUpOldLogEntries();
                 }
             }
         }
@@ -95,10 +95,10 @@ namespace SiliconeTrader.Core
         {
             lock (syncRoot)
             {
-                if (Config.Enabled)
+                if (this.Config.Enabled)
                 {
                     logger.Information(message, propertyValues);
-                    CleanUpOldLogEntries();
+                    this.CleanUpOldLogEntries();
                 }
             }
         }
@@ -107,10 +107,10 @@ namespace SiliconeTrader.Core
         {
             lock (syncRoot)
             {
-                if (Config.Enabled)
+                if (this.Config.Enabled)
                 {
                     logger.Warning(exception, message);
-                    CleanUpOldLogEntries();
+                    this.CleanUpOldLogEntries();
                 }
             }
         }
@@ -119,10 +119,10 @@ namespace SiliconeTrader.Core
         {
             lock (syncRoot)
             {
-                if (Config.Enabled)
+                if (this.Config.Enabled)
                 {
                     logger.Warning(message, propertyValues);
-                    CleanUpOldLogEntries();
+                    this.CleanUpOldLogEntries();
                 }
             }
         }
@@ -131,10 +131,10 @@ namespace SiliconeTrader.Core
         {
             lock (syncRoot)
             {
-                if (Config.Enabled)
+                if (this.Config.Enabled)
                 {
                     logger.Error(exception, message);
-                    CleanUpOldLogEntries();
+                    this.CleanUpOldLogEntries();
                 }
             }
         }
@@ -143,10 +143,10 @@ namespace SiliconeTrader.Core
         {
             lock (syncRoot)
             {
-                if (Config.Enabled)
+                if (this.Config.Enabled)
                 {
                     logger.Error(message, propertyValues);
-                    CleanUpOldLogEntries();
+                    this.CleanUpOldLogEntries();
                 }
             }
         }
@@ -155,10 +155,10 @@ namespace SiliconeTrader.Core
         {
             lock (syncRoot)
             {
-                if (Config.Enabled)
+                if (this.Config.Enabled)
                 {
                     logger.Fatal(exception, message);
-                    CleanUpOldLogEntries();
+                    this.CleanUpOldLogEntries();
                 }
             }
         }
@@ -167,10 +167,10 @@ namespace SiliconeTrader.Core
         {
             lock (syncRoot)
             {
-                if (Config.Enabled)
+                if (this.Config.Enabled)
                 {
                     logger.Fatal(message, propertyValues);
-                    CleanUpOldLogEntries();
+                    this.CleanUpOldLogEntries();
                 }
             }
         }
@@ -181,7 +181,7 @@ namespace SiliconeTrader.Core
             {
                 logger.Dispose();
                 Directory.Delete(Path.Combine(Directory.GetCurrentDirectory(), logsPath), true);
-                logger = CreateLogger();
+                logger = this.CreateLogger();
             }
         }
 
@@ -205,7 +205,7 @@ namespace SiliconeTrader.Core
         {
             lock (syncRoot)
             {
-                logger = CreateLogger();
+                logger = this.CreateLogger();
             }
         }
 
@@ -213,16 +213,16 @@ namespace SiliconeTrader.Core
         {
             lock (syncRoot)
             {
-                string outputTemplate = GetConfigValue("outputTemplate", RawConfig.GetChildren());
-                string filterExpression = GetConfigValue("expression", RawConfig.GetChildren());
-                string pathFormat = GetConfigValue("pathFormat", RawConfig.GetChildren());
+                string outputTemplate = this.GetConfigValue("outputTemplate", this.RawConfig.GetChildren());
+                string filterExpression = this.GetConfigValue("expression", this.RawConfig.GetChildren());
+                string pathFormat = this.GetConfigValue("pathFormat", this.RawConfig.GetChildren());
                 logsPath = Path.GetDirectoryName(pathFormat);
 
                 writerStringBuilder = new StringBuilder();
                 writer = new StringWriter(writerStringBuilder);
 
                 return new LoggerConfiguration()
-                    .ReadFrom.ConfigurationSection(RawConfig)
+                    .ReadFrom.ConfigurationSection(this.RawConfig)
                     .WriteTo.Logger(config => config.WriteTo.Memory(writer, LogEventLevel.Information, outputTemplate).Filter.ByIncludingOnly(filterExpression))
                     .CreateLogger();
             }
@@ -241,7 +241,7 @@ namespace SiliconeTrader.Core
 
         private string GetConfigValue(string key, IEnumerable<IConfigurationSection> sections)
         {
-            foreach (var section in sections)
+            foreach (IConfigurationSection section in sections)
             {
                 if (section.Key == key)
                 {
@@ -249,7 +249,7 @@ namespace SiliconeTrader.Core
                 }
                 else
                 {
-                    string value = GetConfigValue(key, section.GetChildren());
+                    string value = this.GetConfigValue(key, section.GetChildren());
                     if (value != null)
                     {
                         return value;

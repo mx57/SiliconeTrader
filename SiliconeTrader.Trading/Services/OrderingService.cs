@@ -72,7 +72,7 @@ namespace SiliconeTrader.Trading
                             };
                         }
 
-                        NormalizeOrder(orderDetails, TradePriceType.Ask);
+                        this.NormalizeOrder(orderDetails, TradePriceType.Ask);
                         options.Metadata.TradingRules = pairConfig.Rules.ToList();
                         options.Metadata.LastBuyMargin = options.Metadata.LastBuyMargin ?? tradingPair?.CurrentMargin ?? null;
                         orderDetails.Metadata = options.Metadata;
@@ -162,7 +162,7 @@ namespace SiliconeTrader.Trading
                             };
                         }
 
-                        NormalizeOrder(orderDetails, TradePriceType.Bid);
+                        this.NormalizeOrder(orderDetails, TradePriceType.Bid);
                         tradingPair.SetMetadata(tradingPair.Metadata.MergeWith(options.Metadata));
                         orderDetails.Metadata = tradingPair.Metadata;
                         var tradeResult = tradingService.Account.AddSellOrder(orderDetails) as TradeResult;

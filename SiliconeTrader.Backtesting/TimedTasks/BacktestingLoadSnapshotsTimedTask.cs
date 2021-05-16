@@ -36,14 +36,14 @@ namespace SiliconeTrader.Backtesting
             this.tradingService = tradingService;
             this.backtestingService = backtestingService;
 
-            PopulateSnapshotPaths();
+            this.PopulateSnapshotPaths();
         }
 
         protected override void Run()
         {
             if (!isCompleted)
             {
-                LoadNextSnapshots();
+                this.LoadNextSnapshots();
             }
         }
 
@@ -87,7 +87,7 @@ namespace SiliconeTrader.Backtesting
                         currentSignals = data.GroupBy(s => s.Pair).ToDictionary(s => s.Key, s => s.AsEnumerable());
                         loadedSignalSnapshots++;
 
-                        var currentSignalsSnapshotFile = currentSignalsSnapshotPath.Substring(currentSignalsSnapshotPath.Length - 27);
+                        string currentSignalsSnapshotFile = currentSignalsSnapshotPath.Substring(currentSignalsSnapshotPath.Length - 27);
                         currentSignalsSnapshotFile = currentSignalsSnapshotFile.Replace('\\', '-').Replace('/', '-');
                         if (backtestingService.Config.ReplayOutput && loadedSignalSnapshots % 100 == 0)
                         {
@@ -110,7 +110,7 @@ namespace SiliconeTrader.Backtesting
                         currentTickers = data.ToDictionary(t => t.Pair, t => t);
                         loadedTickerSnapshots++;
 
-                        var currentTickersSnapshotFile = currentTickersSnapshotPath.Substring(currentTickersSnapshotPath.Length - 27);
+                        string currentTickersSnapshotFile = currentTickersSnapshotPath.Substring(currentTickersSnapshotPath.Length - 27);
                         currentTickersSnapshotFile = currentTickersSnapshotFile.Replace('\\', '-').Replace('/', '-');
                         if (backtestingService.Config.ReplayOutput && loadedTickerSnapshots % 100 == 0)
                         {
@@ -136,10 +136,10 @@ namespace SiliconeTrader.Backtesting
 
         private void PopulateSnapshotPaths()
         {
-            var signalsSnapshotPath = Path.Combine(Directory.GetCurrentDirectory(), backtestingService.Config.SnapshotsPath, Constants.SnapshotEntities.Signals);
+            string signalsSnapshotPath = Path.Combine(Directory.GetCurrentDirectory(), backtestingService.Config.SnapshotsPath, Constants.SnapshotEntities.Signals);
             if (Directory.Exists(signalsSnapshotPath))
             {
-                var files = Directory.EnumerateFiles(signalsSnapshotPath, "*." + BacktestingService.SNAPSHOT_FILE_EXTENSION, SearchOption.AllDirectories);
+                IEnumerable<string> files = Directory.EnumerateFiles(signalsSnapshotPath, "*." + BacktestingService.SNAPSHOT_FILE_EXTENSION, SearchOption.AllDirectories);
                 allSignalSnapshotPaths = new Queue<string>(files.Take(backtestingService.Config.ReplayEndIndex ?? files.Count()).Skip(backtestingService.Config.ReplayStartIndex ?? 0));
             }
             else
@@ -148,10 +148,10 @@ namespace SiliconeTrader.Backtesting
             }
             totalSignalSnapshots = allSignalSnapshotPaths.Count;
 
-            var tickersSnapshotPath = Path.Combine(Directory.GetCurrentDirectory(), backtestingService.Config.SnapshotsPath, Constants.SnapshotEntities.Tickers);
+            string tickersSnapshotPath = Path.Combine(Directory.GetCurrentDirectory(), backtestingService.Config.SnapshotsPath, Constants.SnapshotEntities.Tickers);
             if (Directory.Exists(tickersSnapshotPath))
             {
-                var files = Directory.EnumerateFiles(tickersSnapshotPath, "*." + BacktestingService.SNAPSHOT_FILE_EXTENSION, SearchOption.AllDirectories);
+                IEnumerable<string> files = Directory.EnumerateFiles(tickersSnapshotPath, "*." + BacktestingService.SNAPSHOT_FILE_EXTENSION, SearchOption.AllDirectories);
                 allTickerSnapshotPaths = new Queue<string>(files.Take(backtestingService.Config.ReplayEndIndex ?? files.Count()).Skip(backtestingService.Config.ReplayStartIndex ?? 0));
             }
             else

@@ -11,7 +11,7 @@ namespace SiliconeTrader.Core
     {
         public override string ServiceName => Constants.ServiceNames.NotificationService;
 
-        INotificationConfig INotificationService.Config => Config;
+        INotificationConfig INotificationService.Config => this.Config;
 
         private readonly ILoggingService loggingService;
 
@@ -29,25 +29,25 @@ namespace SiliconeTrader.Core
             try
             {
                 loggingService.Info("Start Notification service...");
-                if (Config.TelegramEnabled)
+                if (this.Config.TelegramEnabled)
                 {
-                    telegramBotClient = new TelegramBotClient(Config.TelegramBotToken);
-                    var me = telegramBotClient.GetMeAsync().Result;
-                    telegramChatId = new ChatId(Config.TelegramChatId);
+                    telegramBotClient = new TelegramBotClient(this.Config.TelegramBotToken);
+                    User me = telegramBotClient.GetMeAsync().Result;
+                    telegramChatId = new ChatId(this.Config.TelegramChatId);
                 }
                 loggingService.Info("Notification service started");
             }
             catch (Exception ex)
             {
                 loggingService.Error("Unable to start Notification service", ex);
-                Config.Enabled = false;
+                this.Config.Enabled = false;
             }
         }
 
         public void Stop()
         {
             loggingService.Info("Stop Notification service...");
-            if (Config.TelegramEnabled)
+            if (this.Config.TelegramEnabled)
             {
                 telegramBotClient = null;
             }
@@ -56,14 +56,14 @@ namespace SiliconeTrader.Core
 
         public void Notify(string message)
         {
-            if (Config.Enabled)
+            if (this.Config.Enabled)
             {
-                if (Config.TelegramEnabled)
+                if (this.Config.TelegramEnabled)
                 {
                     try
                     {
-                        var instanceName = Application.Resolve<ICoreService>().Config.InstanceName;
-                        telegramBotClient.SendTextMessageAsync(telegramChatId, $"({instanceName}) {message}", ParseMode.Default, false, !Config.TelegramAlertsEnabled);
+                        string instanceName = Application.Resolve<ICoreService>().Config.InstanceName;
+                        telegramBotClient.SendTextMessageAsync(telegramChatId, $"({instanceName}) {message}", ParseMode.Default, false, !this.Config.TelegramAlertsEnabled);
                     }
                     catch (Exception ex)
                     {
@@ -75,8 +75,8 @@ namespace SiliconeTrader.Core
 
         protected override void OnConfigReloaded()
         {
-            Stop();
-            Start();
+            this.Stop();
+            this.Start();
         }
     }
 }

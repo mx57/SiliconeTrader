@@ -19,14 +19,14 @@ namespace SiliconeTrader.Exchange.Binance
         {
             var binanceApi = new ExchangeBinanceAPI
             {
-                RateLimit = new RateGate(Config.RateLimitOccurences, TimeSpan.FromSeconds(Config.RateLimitTimeframe))
+                RateLimit = new RateGate(this.Config.RateLimitOccurences, TimeSpan.FromSeconds(this.Config.RateLimitTimeframe))
             };
             return binanceApi;
         }
 
         public override IOrderDetails PlaceOrder(IOrder order)
         {
-            var result = Api.PlaceOrderAsync(new ExchangeOrderRequest
+            ExchangeOrderResult result = this.Api.PlaceOrderAsync(new ExchangeOrderRequest
             {
                 OrderType = (ExchangeSharp.OrderType)(int)order.Type,
                 IsBuy = order.Side == OrderSide.Buy,
@@ -55,9 +55,9 @@ namespace SiliconeTrader.Exchange.Binance
         public override IEnumerable<IOrderDetails> GetTrades(string pair)
         {
             var myTrades = new List<OrderDetails>();
-            var results = ((ExchangeBinanceAPI)Api).GetMyTrades(pair);
+            IEnumerable<ExchangeOrderResult> results = ((ExchangeBinanceAPI)this.Api).GetMyTrades(pair);
 
-            foreach (var result in results)
+            foreach (ExchangeOrderResult result in results)
             {
                 myTrades.Add(new OrderDetails
                 {
@@ -95,15 +95,15 @@ namespace SiliconeTrader.Exchange.Binance
             {
                 if (tradingMarket == Constants.Markets.BTC)
                 {
-                    foreach (var market in arbitrageMarkets)
+                    foreach (ArbitrageMarket market in arbitrageMarkets)
                     {
-                        string marketPair = ChangeMarket(pair, market.ToString());
-                        string arbitragePair = GetArbitrageMarketPair(market);
+                        string marketPair = this.ChangeMarket(pair, market.ToString());
+                        string arbitragePair = this.GetArbitrageMarketPair(market);
 
                         if (marketPair != pair &&
-                            Tickers.TryGetValue(pair, out Ticker pairTicker) &&
-                            Tickers.TryGetValue(marketPair, out Ticker marketTicker) &&
-                            Tickers.TryGetValue(arbitragePair, out Ticker arbitrageTicker))
+                            this.Tickers.TryGetValue(pair, out Ticker pairTicker) &&
+                            this.Tickers.TryGetValue(marketPair, out Ticker marketTicker) &&
+                            this.Tickers.TryGetValue(arbitragePair, out Ticker arbitrageTicker))
                         {
                             decimal directArbitragePercentage = 0;
                             decimal reverseArbitragePercentage = 0;

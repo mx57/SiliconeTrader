@@ -26,14 +26,14 @@ namespace SiliconeTrader.Backtesting
         {
             if (backtestingService.Config.Enabled && !backtestingService.Config.Replay)
             {
-                TakeSignalsSnapshot();
-                TakeTickersSnapshot();
+                this.TakeSignalsSnapshot();
+                this.TakeTickersSnapshot();
             }
         }
 
         private void TakeSignalsSnapshot()
         {
-            var signals = signalsService.GetAllSignals().Select(s => SignalData.FromSignal(s));
+            System.Collections.Generic.IEnumerable<SignalData> signals = signalsService.GetAllSignals().Select(s => SignalData.FromSignal(s));
 
             byte[] signalBytes = ZeroFormatterSerializer.Serialize(signals);
             string signalsSnapshotFilePath = backtestingService.GetSnapshotFilePath(Constants.SnapshotEntities.Signals);
@@ -46,7 +46,7 @@ namespace SiliconeTrader.Backtesting
 
         private void TakeTickersSnapshot()
         {
-            var tickers = tradingService.Exchange.GetTickers().Select(t => TickerData.FromTicker(t));
+            System.Collections.Generic.IEnumerable<TickerData> tickers = tradingService.Exchange.GetTickers().Select(t => TickerData.FromTicker(t));
 
             byte[] tickerBytes = ZeroFormatterSerializer.Serialize(tickers);
             string tickersSnapshotFilePath = backtestingService.GetSnapshotFilePath(Constants.SnapshotEntities.Tickers);
