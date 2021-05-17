@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SiliconeTrader.Machine.Client;
 using SiliconeTrader.Machine.Client.Models;
+using SiliconeTrader.UI.Models;
 
 namespace SiliconeTrader.UI.Controllers
 {
@@ -15,52 +18,62 @@ namespace SiliconeTrader.UI.Controllers
             _logger = logger;
         }
 
-        public IActionResult Log()
+        public async Task<IActionResult> Log()
         {
-            return this.View();
+            LogViewModel log = await BotClient.Instance.GetLog(CancellationToken.None);
+
+            return this.View(log);
         }
 
-        public IActionResult Rules()
+        public async Task<IActionResult> Rules()
         {
-            return this.View();
-        }
+            RulesViewModel rules = await BotClient.Instance.GetRules(CancellationToken.None);
 
-        [HttpPost]
-        public IActionResult SaveConfig()
-        {
-            return this.View();
-        }
-
-
-        public IActionResult Settings()
-        {
-            return this.View();
+            return this.View(rules);
         }
 
         [HttpPost]
-        public IActionResult Settings(SettingsViewModel model)
+        public async Task<IActionResult> SaveConfig(UpdateConfigModel model)
         {
-            return this.View();
+            await BotClient.Instance.SaveConfig(model.Name, model.Definition, CancellationToken.None);
+
+            return this.Ok();
         }
-         
-        public IActionResult Stats()
+
+
+        public async Task<IActionResult> Settings()
         {
-            return this.View();
+            SettingsViewModel settings = await BotClient.Instance.GetSettings(CancellationToken.None);
+
+            return this.View(settings);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Settings(SaveSettingsRequest settings)
+        {
+            SettingsViewModel savedSettings = await BotClient.Instance.SaveSettings(settings, CancellationToken.None);
+
+            return this.View(savedSettings);
+        }
+
+        public async Task<IActionResult> Stats()
+        {
+            StatsViewModel stats = await BotClient.Instance.GetStats(CancellationToken.None);
+
+            return this.View(stats);
         }
 
         public IActionResult Status()
         {
             return this.View();
         }
-        public IActionResult RefreshAccount()
-        {
-            return this.View();
-        }
 
-        public IActionResult RestartServices()
+        [HttpPost]
+        public async Task<IActionResult> Reset()
         {
-            return this.View();
-        }
+            await BotClient.Instance.RestartServices(CancellationToken.None);
 
+            return this.Ok();
+        }
     }
 }

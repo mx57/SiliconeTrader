@@ -1,15 +1,18 @@
-﻿namespace SiliconeTrader.Machine.Client.Models
+﻿using SiliconeTrader.Machine.Client.Core;
+
+namespace SiliconeTrader.Machine.Client.Models
 {
     public class DefaultViewModel : IInstanceVersion
     {
-        public static DefaultViewModel Default => new DefaultViewModel
+        public static DefaultViewModel Default => new()
         {
             InstanceName = "",
             ReadOnlyMode = true,
-            Version = ""
+            Version = "",
+            Error = null
         };
 
-        public string Error { get; set; }
+        public ErrorResponse Error { get; set; }
 
         public string InstanceName { get; set; }
 

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SiliconeTrader.Machine.Client;
 using SiliconeTrader.Machine.Client.Core;
+using SiliconeTrader.Machine.Client.Models;
 
 namespace SiliconeTrader.UI.Controllers
 {
@@ -18,9 +19,11 @@ namespace SiliconeTrader.UI.Controllers
             _logger = logger;
         }
 
-        public IActionResult Trades(DateTimeOffset id)
+        public async Task<IActionResult> Index(DateTimeOffset? id)
         {
-            return this.View();
+            TradesViewModel trades = await BotClient.Trading.GetTrades(id ?? DateTimeOffset.Now, CancellationToken.None);
+
+            return this.View(trades);
         }
 
         [HttpPost]

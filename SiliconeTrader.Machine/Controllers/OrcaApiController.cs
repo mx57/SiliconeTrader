@@ -84,6 +84,7 @@ namespace SiliconeTrader.Machine.Controllers
 
 
         #region Markets
+
         [HttpPost("market-pairs")]
         [ProducesResponseType(200, Type = typeof(MarketPairsResponse))]
         public MarketPairsResponse MarketPairs(MarketPairsRequest request)
@@ -161,7 +162,8 @@ namespace SiliconeTrader.Machine.Controllers
         #endregion
 
         #region System
-        [HttpGet("account/refresh")]
+
+        [HttpPost("account/refresh")]
         public IActionResult RefreshAccount()
         {
             if (!Application.Resolve<ICoreService>().Config.ReadOnlyMode)
@@ -179,50 +181,55 @@ namespace SiliconeTrader.Machine.Controllers
         [HttpGet("rules")]
         public RulesViewModel Rules()
         {
-            Dictionary<DateTimeOffset, List<TradeResult>> allTades = this.GetTrades();
+            ICoreService coreService = Application.Resolve<ICoreService>();
             var signalRuleStats = new Dictionary<string, SignalRuleStats>();
+
+            Dictionary<DateTimeOffset, List<TradeResult>> allTades = GetTrades();
+
             foreach (TradeResult trade in allTades.Values.SelectMany(t => t))
             {
-                if (trade.IsSuccessful)
+                if (!trade.IsSuccessful)
                 {
-                    string signalRule = trade?.Metadata?.SignalRule;
-                    if (!string.IsNullOrWhiteSpace(signalRule))
+                    continue;
+                }
+
+                string signalRule = trade?.Metadata?.SignalRule;
+                if (string.IsNullOrWhiteSpace(signalRule))
+                {
+                    continue;
+                }
+
+                if (!signalRuleStats.TryGetValue(signalRule, out SignalRuleStats ruleStats))
+                {
+                    ruleStats = new SignalRuleStats();
+                    signalRuleStats.Add(signalRule, ruleStats);
+                }
+
+                if (!trade.IsSwap)
+                {
+                    ruleStats.TotalCost += trade.Cost;
+                    ruleStats.TotalProfit += trade.Profit;
+                    decimal margin = trade.Profit / (trade.Cost + (trade.Metadata?.AdditionalCosts ?? 0)) * 100;
+                    if (trade.OrderDates.Count == 1)
                     {
-                        if (!signalRuleStats.TryGetValue(signalRule, out SignalRuleStats ruleStats))
-                        {
-                            ruleStats = new SignalRuleStats();
-                            signalRuleStats.Add(signalRule, ruleStats);
-                        }
-
-                        if (!trade.IsSwap)
-                        {
-                            ruleStats.TotalCost += trade.Cost;
-                            ruleStats.TotalProfit += trade.Profit;
-                            decimal margin = trade.Profit / (trade.Cost + (trade.Metadata?.AdditionalCosts ?? 0)) * 100;
-                            if (trade.OrderDates.Count == 1)
-                            {
-                                ruleStats.Margin.Add(margin);
-                            }
-                            else
-                            {
-                                ruleStats.MarginDCA.Add(margin);
-                            }
-                        }
-                        else
-                        {
-                            ruleStats.TotalSwaps++;
-                        }
-
-                        ruleStats.TotalTrades++;
-                        ruleStats.TotalOrders += trade.OrderDates.Count;
-                        ruleStats.TotalFees += trade.FeesTotal;
-                        ruleStats.Age.Add((trade.SellDate - trade.OrderDates.Min()).TotalDays);
-                        ruleStats.DCA.Add((trade.OrderDates.Count - 1) + (trade.Metadata?.AdditionalDCALevels ?? 0));
+                        ruleStats.Margin.Add(margin);
+                    }
+                    else
+                    {
+                        ruleStats.MarginDCA.Add(margin);
                     }
                 }
-            }
+                else
+                {
+                    ruleStats.TotalSwaps++;
+                }
 
-            ICoreService coreService = Application.Resolve<ICoreService>();
+                ruleStats.TotalTrades++;
+                ruleStats.TotalOrders += trade.OrderDates.Count;
+                ruleStats.TotalFees += trade.FeesTotal;
+                ruleStats.Age.Add((trade.SellDate - trade.OrderDates.Min()).TotalDays);
+                ruleStats.DCA.Add((trade.OrderDates.Count - 1) + (trade.Metadata?.AdditionalDCALevels ?? 0));
+            }
 
             var model = new RulesViewModel
             {
@@ -267,13 +274,15 @@ namespace SiliconeTrader.Machine.Controllers
 
             return model;
         }
-        [HttpGet("services/restart")]
+
+        [HttpPost("services/restart")]
         public IActionResult RestartServices()
         {
             if (!Application.Resolve<ICoreService>().Config.ReadOnlyMode)
             {
                 ICoreService coreService = Application.Resolve<ICoreService>();
                 coreService.Restart();
+
                 return new OkResult();
             }
             else
@@ -283,12 +292,19 @@ namespace SiliconeTrader.Machine.Controllers
         }
 
         [HttpPost("config/{configName}/save")]
-        public IActionResult SaveConfig(string configName, [FromBody] string configDefinition)
+        public IActionResult SaveConfig(string configName, SaveConfigRequest request)
         {
-
-            if (!Application.Resolve<ICoreService>().Config.ReadOnlyMode && !string.IsNullOrWhiteSpace(configName) && !string.IsNullOrWhiteSpace(configDefinition))
+            if (request == null)
             {
-                Application.ConfigProvider.SetSectionJson(configName, configDefinition);
+                return new BadRequestResult();
+            }
+
+            if (!Application.Resolve<ICoreService>().Config.ReadOnlyMode
+                && !string.IsNullOrWhiteSpace(configName)
+                && !string.IsNullOrWhiteSpace(request.ConfigDefinition))
+            {
+                Application.ConfigProvider.SetSectionJson(configName, request.ConfigDefinition);
+
                 return new OkResult();
             }
             else
@@ -352,14 +368,17 @@ namespace SiliconeTrader.Machine.Controllers
                 SellEnabled = tradingService.Config.SellEnabled,
                 TradingSuspended = tradingService.IsTradingSuspended,
                 HealthCheckEnabled = coreService.Config.HealthCheckEnabled,
-                Configs = allConfigurableServices.Where(s => !s.GetType().Name.Contains(Constants.ServiceNames.BacktestingService)).OrderBy(s => s.ServiceName).ToDictionary(s => s.ServiceName, s => Application.ConfigProvider.GetSectionJson(s.ServiceName))
+                Configs = allConfigurableServices
+                    .Where(s => !s.GetType().Name.Contains(Constants.ServiceNames.BacktestingService))
+                    .OrderBy(s => s.ServiceName)
+                    .ToDictionary(s => s.ServiceName, s => Application.ConfigProvider.GetSectionJson(s.ServiceName))
             };
 
             return model;
         }
 
         [HttpPost("settings")]
-        public SettingsViewModel Settings(SettingsViewModel model)
+        public SettingsViewModel Settings(SaveSettingsRequest model)
         {
             if (!Application.Resolve<ICoreService>().Config.ReadOnlyMode)
             {
@@ -395,10 +414,15 @@ namespace SiliconeTrader.Machine.Controllers
         public StatsViewModel Stats()
         {
             ICoreService coreService = Application.Resolve<ICoreService>();
-
             ITradingService tradingService = Application.Resolve<ITradingService>();
-            decimal accountInitialBalance = tradingService.Config.VirtualTrading ? tradingService.Config.VirtualAccountInitialBalance : tradingService.Config.AccountInitialBalance;
-            DateTimeOffset accountInitialBalanceDate = tradingService.Config.VirtualTrading ? DateTimeOffset.Now.AddDays(-30) : tradingService.Config.AccountInitialBalanceDate;
+
+            decimal accountInitialBalance = tradingService.Config.VirtualTrading
+                ? tradingService.Config.VirtualAccountInitialBalance
+                : tradingService.Config.AccountInitialBalance;
+
+            DateTimeOffset accountInitialBalanceDate = tradingService.Config.VirtualTrading
+                ? DateTimeOffset.Now.AddDays(-30)
+                : tradingService.Config.AccountInitialBalanceDate;
 
             var model = new StatsViewModel
             {
@@ -410,7 +434,7 @@ namespace SiliconeTrader.Machine.Controllers
                 AccountBalance = tradingService.Account.GetTotalBalance(),
                 Market = tradingService.Config.Market,
                 Balances = new Dictionary<DateTimeOffset, decimal>(),
-                Trades = this.GetTrades()
+                Trades = GetTrades()
             };
 
             foreach (KeyValuePair<DateTimeOffset, List<TradeResult>> kvp in model.Trades.OrderBy(k => k.Key))
@@ -497,7 +521,7 @@ namespace SiliconeTrader.Machine.Controllers
                 ReadOnlyMode = coreService.Config.ReadOnlyMode,
                 TimezoneOffset = coreService.Config.TimezoneOffset,
                 Date = id,
-                Trades = this.GetTrades(id).Values.FirstOrDefault() ?? new List<TradeResult>()
+                Trades = GetTrades(id).Values.FirstOrDefault() ?? new List<TradeResult>()
             };
 
             return model;
@@ -544,7 +568,7 @@ namespace SiliconeTrader.Machine.Controllers
             };
         }
 
-        private Dictionary<DateTimeOffset, List<TradeResult>> GetTrades(DateTimeOffset? date = null)
+        private static Dictionary<DateTimeOffset, List<TradeResult>> GetTrades(DateTimeOffset? date = null)
         {
             ICoreService coreService = Application.Resolve<ICoreService>();
             string logsPath = Path.Combine(Directory.GetCurrentDirectory(), "log");

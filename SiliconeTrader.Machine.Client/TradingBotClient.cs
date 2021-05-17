@@ -20,6 +20,29 @@ namespace SiliconeTrader.Machine.Client
         ITradingManager Trading { get; }
 
         IMarketManager Markets { get; }
+        IAccountManager Account { get; }
+    }
+
+    public interface IAccountManager
+    {
+        Task Refresh(CancellationToken cancellationToken);
+    }
+
+    internal class AccountManager : BaseManager, IAccountManager
+    {
+
+        private AccountManager(IRestClient restClient, IModelConverter modelConverter)
+            : base(restClient, modelConverter)
+        {
+        }
+
+        public static IAccountManager Create(IRestClient restClient, IModelConverter modelConverter)
+        {
+            return new AccountManager(restClient, modelConverter);
+        }
+
+        public Task Refresh(CancellationToken cancellationToken)
+            => this.SendAsync<EmptyResponse>(HttpMethod.Post, "/api/ORCA/v1/account/refresh", cancellationToken);
     }
 
     public interface IMarketManager
@@ -70,6 +93,8 @@ namespace SiliconeTrader.Machine.Client
             this.Instance = InstanceManager.Create(restClient, modelConverter);
             this.Trading = TradingManager.Create(restClient, modelConverter);
             this.Markets = MarketsManager.Create(restClient, modelConverter);
+            this.Account = AccountManager.Create(restClient, modelConverter);
+
         }
 
         public IBacktestingManager Backtesting { get; }
@@ -83,5 +108,6 @@ namespace SiliconeTrader.Machine.Client
         public ITradingManager Trading { get; }
 
         public IMarketManager Markets { get; }
+        public IAccountManager Account { get; }
     }
 }

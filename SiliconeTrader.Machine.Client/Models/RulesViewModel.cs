@@ -2,7 +2,7 @@
 
 namespace SiliconeTrader.Machine.Client.Models
 {
-    public class RulesViewModel : DefaultViewModel
+    public class RulesViewModel : BotResponse, IInstanceVersion
     {
         public Dictionary<string, SignalRuleStats> SignalRuleStats { get; set; }
     }

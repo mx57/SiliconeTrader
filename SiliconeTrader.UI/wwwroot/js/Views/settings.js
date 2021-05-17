@@ -27,7 +27,7 @@ $(function () {
 
 function refreshAccount() {
     if (confirm("Refresh Account?")) {
-        $.get("/RefreshAccount", function (data) {
+        $.post("/Account/Refresh", function (data) {
 
         }).fail(function (data) {
             alert("Unable to refresh account");
@@ -37,17 +37,17 @@ function refreshAccount() {
 
 function restartServices() {
     if (confirm("Restart Services?")) {
-        $.get("/RestartServices", function (data) {
+        $.post("/Bot/Reset", function (data) {
 
         }).fail(function (data) {
-            //alert("Unable to restart services");
+            alert("Unable to restart services");
         });
     }
 }
 
 function logout() {
     if (confirm("Log out?")) {
-        window.location.href = "/Logout";
+        window.location.href = "/Account/Logout";
     }
 }
 
@@ -58,7 +58,8 @@ function saveConfig(e) {
     var json = JSON.stringify(editor.get(), null, 2);
     var configStatus = tab.find("#saveConfigStatus");
     configStatus.text("Saving...");
-    $.post("/SaveConfig", { name: configName, definition: json }, function (data) {
+
+    $.post("/Bot/SaveConfig", { name: configName, definition: json }, function (data) {
         configStatus.text("Saved");
         setTimeout(function () {
             configStatus.text("");

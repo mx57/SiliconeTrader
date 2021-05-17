@@ -34,7 +34,7 @@
             {
                 <tr>
                     <td>@kvp.Key.ToString("yyyy-MM-dd")</td>
-                    <td>@Html.ActionLink(kvp.Value.Count.ToString(), "Trades", "Home", new { id = kvp.Key.ToString("o") }, new { @class = "btn btb-sm btn-success trades-link" })</td>
+                    <td>@Html.ActionLink(kvp.Value.Count.ToString(), "Index", "Trades", new { id = kvp.Key.ToString("o") }, new { @class = "btn btb-sm btn-success trades-link" })</td>
                     <td>@{ var percentage = kvp.Value.Where(t => !t.IsSwap).Sum(t => t.Profit) / Model.Balances[kvp.Key] * 100; @Html.Raw(percentage.ToString("0.00")); }</td>
                     <td>@kvp.Value.Where(t => !t.IsSwap).Sum(t => t.Profit).ToString("0.00000000")</td>
                     <td>@kvp.Value.Sum(t => t.FeesTotal).ToString("0.00000000")</td>

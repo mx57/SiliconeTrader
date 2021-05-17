@@ -1,10 +1,10 @@
-﻿using SiliconeTrader.Core;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using SiliconeTrader.Core;
 
 namespace SiliconeTrader.Machine.Client.Models
 {
-    public class StatsViewModel : DefaultViewModel
+    public class StatsViewModel : BotResponse, IInstanceVersion
     {
         public decimal AccountBalance { get; set; }
 

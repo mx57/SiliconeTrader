@@ -32,8 +32,7 @@ namespace SiliconeTrader.UI.Controllers
                 {
                     InstanceName = "",// botInstance.InstanceName,
                     ReadOnlyMode = true, //botInstance.ReadOnlyMode,
-                    Version = "1.1 B", //botInstance.Version,
-                    Error = "" //botInstance.Error?.ErrorMessage
+                    Version = "1.1 B", //botInstance.Version
                 };
             }
 

@@ -2,7 +2,7 @@
 
 namespace SiliconeTrader.Machine.Client.Models
 {
-    public class LogViewModel : DefaultViewModel
+    public class LogViewModel : BotResponse
     {
         public IEnumerable<string> LogEntries { get; set; }
     }
