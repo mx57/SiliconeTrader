@@ -1,19 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using SiliconeTrader.Machine.Client.Core.Abstractions;
 using SiliconeTrader.Machine.Client.Models;
 
 namespace SiliconeTrader.Machine.Client.Core
 {
-    public interface ITradingManager
-    {
-        Task<TradingPairResponse> GetTradingPairs(CancellationToken cancellationToken);
-        Task<TradesViewModel> GetTrades(DateTimeOffset id, CancellationToken cancellationToken);
-    }
-
-
     internal class TradingManager : BaseManager, ITradingManager
     {
         private TradingManager(IRestClient restClient, IModelConverter modelConverter)
@@ -31,10 +24,5 @@ namespace SiliconeTrader.Machine.Client.Core
 
         public Task<TradingPairResponse> GetTradingPairs(CancellationToken cancellationToken)
             => this.SendAsync<TradingPairResponse>(HttpMethod.Get, "/api/ORCA/v1/trading-pairs", cancellationToken);
-    }
-
-    public class TradingPairResponse : BotResponse
-    {
-        public IEnumerable<TradingPairApiModel> TradingPairs { get; set; }
     }
 }

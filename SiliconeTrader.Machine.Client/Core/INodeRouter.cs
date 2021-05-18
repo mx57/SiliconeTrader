@@ -1,4 +1,6 @@
 ﻿using SiliconeTrader.Core;
+using SiliconeTrader.Machine.Client.Core.Abstractions;
+using SiliconeTrader.Machine.Client.Models;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -113,7 +115,7 @@ namespace SiliconeTrader.Machine.Client.Core
 
     public class NodeRouter : INodeRouter
     {
-        private INode[] Nodes;
+        private readonly INode[] Nodes;
 
         private Task<HttpResponseMessage> Route(HttpRequestMessage requestMessage, CancellationToken cancellationToken)
         {

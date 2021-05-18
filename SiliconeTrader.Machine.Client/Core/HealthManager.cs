@@ -1,14 +1,11 @@
 ﻿using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using SiliconeTrader.Machine.Client.Core.Abstractions;
+using SiliconeTrader.Machine.Client.Models;
 
 namespace SiliconeTrader.Machine.Client.Core
 {
-    public interface IHealthManager
-    {
-        Task<HealthCheckResult> NodeStatus(CancellationToken cancellationToken);
-    }
-
     internal class HealthManager : BaseManager, IHealthManager
     {
         private HealthManager(IRestClient restClient, IModelConverter modelConverter)

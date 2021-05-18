@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
+using SiliconeTrader.Machine.Client.Core.Abstractions;
+using SiliconeTrader.Machine.Client.Models;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;

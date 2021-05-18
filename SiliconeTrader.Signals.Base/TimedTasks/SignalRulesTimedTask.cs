@@ -80,7 +80,7 @@ namespace SiliconeTrader.Signals.Base
                             IEnumerable<ISignal> signalsByPair = signalsService.GetSignalsByPair(pair);
                             if (signalsByPair != null)
                             {
-                                Dictionary<string, ISignal> signals = signalsByPair.ToDictionary(s => s.Name, s => s);
+                                var signals = signalsByPair.ToDictionary(s => s.Name, s => s);
                                 if (rulesService.CheckConditions(trailingInfo.Rule.Conditions, signals, globalRating, pair, null))
                                 {
                                     IEnumerable<ISignal> ruleSignals = signals.Where(s => trailingInfo.Rule.Conditions.Any(c => c.Signal == s.Key)).Select(s => s.Value);

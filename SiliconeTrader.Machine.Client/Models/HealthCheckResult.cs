@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Collections.Generic;
 
-namespace SiliconeTrader.Machine.Client.Core
+namespace SiliconeTrader.Machine.Client.Models
 {
     public class HealthCheckResult : BotResponse
     {

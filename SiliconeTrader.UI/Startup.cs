@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Serilog;
+using Serilog.Events;
 using SiliconeTrader.Machine.Client;
 using SiliconeTrader.Machine.Client.Core;
 using SiliconeTrader.UI.Data;
@@ -36,7 +38,18 @@ namespace SiliconeTrader.UI
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
-            
+
+            app.UseSerilogRequestLogging(options => {
+                options.GetLevel = (httpContext, elapsed, ex) => LogEventLevel.Debug;
+
+                // Attach additional properties to the request completion event
+                options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+                {
+                    diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
+                    diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
+                };
+            });
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 

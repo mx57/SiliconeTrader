@@ -25,8 +25,8 @@ namespace SiliconeTrader.Trading
             loggingService.Info("Refresh account...");
 
             decimal newBalance = 0;
-            Dictionary<string, decimal> availableAmounts = new Dictionary<string, decimal>();
-            Dictionary<string, IEnumerable<IOrderDetails>> availableTrades = new Dictionary<string, IEnumerable<IOrderDetails>>();
+            var availableAmounts = new Dictionary<string, decimal>();
+            var availableTrades = new Dictionary<string, IEnumerable<IOrderDetails>>();
             DateTimeOffset refreshStart = DateTimeOffset.Now;
 
             // Preload account data without locking the account

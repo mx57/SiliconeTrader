@@ -98,7 +98,7 @@ namespace SiliconeTrader.Backtesting
             {
                 arbitrageMarkets = new List<ArbitrageMarket> { ArbitrageMarket.ETH, ArbitrageMarket.BNB, ArbitrageMarket.USDT };
             }
-            Arbitrage arbitrage = new Arbitrage
+            var arbitrage = new Arbitrage
             {
                 Market = arbitrageMarkets.First(),
                 Type = arbitrageType ?? ArbitrageType.Direct

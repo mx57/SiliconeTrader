@@ -541,7 +541,7 @@ namespace SiliconeTrader.Trading
                             Metadata = options.Metadata
                         };
 
-                        TradingPair existingArbitragePair = this.Account.GetTradingPair(buyArbitragePairOrderDetails.Pair) as TradingPair;
+                        var existingArbitragePair = this.Account.GetTradingPair(buyArbitragePairOrderDetails.Pair) as TradingPair;
                         existingArbitragePair.OverrideCost(buyArbitragePairOrderDetails.Cost + buyArbitragePairFees * 2);
                         IOrderDetails sellArbitragePairOrderDetails = orderingService.PlaceSellOrder(sellArbitragePairOptions);
                         existingArbitragePair.OverrideCost(null);

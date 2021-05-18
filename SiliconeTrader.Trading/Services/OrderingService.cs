@@ -20,7 +20,7 @@ namespace SiliconeTrader.Trading
 
         public IOrderDetails PlaceBuyOrder(BuyOptions options)
         {
-            OrderDetails orderDetails = new OrderDetails();
+            var orderDetails = new OrderDetails();
             tradingService.StopTrailingBuy(options.Pair);
             tradingService.StopTrailingSell(options.Pair);
 
@@ -35,7 +35,7 @@ namespace SiliconeTrader.Trading
                 if (tradingService.CanBuy(options, out string message))
                 {
                     IPairConfig pairConfig = tradingService.GetPairConfig(options.Pair);
-                    BuyOrder buyOrder = new BuyOrder
+                    var buyOrder = new BuyOrder
                     {
                         Type = pairConfig.BuyType,
                         Date = DateTimeOffset.Now,
@@ -107,7 +107,7 @@ namespace SiliconeTrader.Trading
 
         public IOrderDetails PlaceSellOrder(SellOptions options)
         {
-            OrderDetails orderDetails = new OrderDetails();
+            var orderDetails = new OrderDetails();
             tradingService.StopTrailingSell(options.Pair);
             tradingService.StopTrailingBuy(options.Pair);
 
@@ -123,7 +123,7 @@ namespace SiliconeTrader.Trading
                 if (tradingService.CanSell(options, out string message))
                 {
                     IPairConfig pairConfig = tradingService.GetPairConfig(normalizedPair);
-                    SellOrder sellOrder = new SellOrder
+                    var sellOrder = new SellOrder
                     {
                         Type = pairConfig.SellType,
                         Date = DateTimeOffset.Now,

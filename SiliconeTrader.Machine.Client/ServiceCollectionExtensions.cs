@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Extensions.Http;
-using SiliconeTrader.Machine.Client.Core;
+using SiliconeTrader.Machine.Client.Core.Abstractions;
 using System;
 using System.Linq;
 using System.Net.Http;

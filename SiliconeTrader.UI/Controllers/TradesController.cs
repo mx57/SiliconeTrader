@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SiliconeTrader.Machine.Client;
-using SiliconeTrader.Machine.Client.Core;
 using SiliconeTrader.Machine.Client.Models;
 
 namespace SiliconeTrader.UI.Controllers

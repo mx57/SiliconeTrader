@@ -1,16 +1,17 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Serialization;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Web;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
+using SiliconeTrader.Machine.Client.Core.Abstractions;
 
 namespace SiliconeTrader.Machine.Client.Core
 {
     public class ModelConverter : IModelConverter
     {
-        private static readonly JsonSerializerSettings JsonSerializerSettings = new JsonSerializerSettings
+        private static readonly JsonSerializerSettings JsonSerializerSettings = new()
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver(),
             NullValueHandling = NullValueHandling.Ignore,
@@ -43,7 +44,7 @@ namespace SiliconeTrader.Machine.Client.Core
 
                     if (value != null && value != default)
                     {
-                        yield return this.GetQueryData(param, param.GetValue(@params, null).ToString().ToLowerInvariant());
+                        yield return GetQueryData(param, param.GetValue(@params, null).ToString().ToLowerInvariant());
                     }
                 }
             }
@@ -56,9 +57,9 @@ namespace SiliconeTrader.Machine.Client.Core
             return queryString;
         }
 
-        private string GetQueryData(PropertyInfo param, string value)
+        private static string GetQueryData(PropertyInfo param, string value)
         {
-            string camelCaseName = char.ToLowerInvariant(param.Name[0]) + param.Name.Substring(1);
+            string camelCaseName = char.ToLowerInvariant(param.Name[0]) + param.Name[1..];
             string encodedValue = HttpUtility.UrlEncode(value);
 
             return $"{camelCaseName}={encodedValue}";

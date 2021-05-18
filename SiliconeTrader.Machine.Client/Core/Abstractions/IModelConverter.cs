@@ -1,4 +1,4 @@
-﻿namespace SiliconeTrader.Machine.Client.Core
+﻿namespace SiliconeTrader.Machine.Client.Core.Abstractions
 {
     public interface IModelConverter
     {

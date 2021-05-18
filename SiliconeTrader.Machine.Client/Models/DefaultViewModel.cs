@@ -1,6 +1,4 @@
-﻿using SiliconeTrader.Machine.Client.Core;
-
-namespace SiliconeTrader.Machine.Client.Models
+﻿namespace SiliconeTrader.Machine.Client.Models
 {
     public class DefaultViewModel : IInstanceVersion
     {

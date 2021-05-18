@@ -50,7 +50,7 @@ namespace SiliconeTrader.Trading
         public void ProcessAllRules()
         {
             IEnumerable<IRule> enabledRules = tradingService.Rules?.Entries?.Where(r => r.Enabled) ?? new List<IRule>();
-            List<string> allPairs = tradingService.Exchange.GetMarketPairs(tradingService.Config.Market).ToList();
+            var allPairs = tradingService.Exchange.GetMarketPairs(tradingService.Config.Market).ToList();
             double? globalRating = signalsService.GetGlobalRating();
 
             foreach (string pair in allPairs)
@@ -58,10 +58,10 @@ namespace SiliconeTrader.Trading
                 IEnumerable<ISignal> signalsByPair = signalsService.GetSignalsByPair(pair);
                 if (signalsByPair != null)
                 {
-                    Dictionary<string, ISignal> signals = signalsByPair.ToDictionary(s => s.Name, s => s);
+                    var signals = signalsByPair.ToDictionary(s => s.Name, s => s);
                     ITradingPair tradingPair = tradingService.Account.GetTradingPair(pair);
-                    TradingConfig modifiedTradingConfig = tradingService.Config.Clone() as TradingConfig;
-                    PairConfig modifiedPairConfig = new PairConfig();
+                    var modifiedTradingConfig = tradingService.Config.Clone() as TradingConfig;
+                    var modifiedPairConfig = new PairConfig();
                     pairConfigs.TryGetValue(pair, out PairConfig oldPairConfig);
                     var appliedRules = new List<IRule>();
 
