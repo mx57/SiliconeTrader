@@ -1,3 +1,3 @@
 #!/bin/bash
 
-dotnet bin/IntelliTrader.dll
+dotnet bin/SiliconeTrader.dll

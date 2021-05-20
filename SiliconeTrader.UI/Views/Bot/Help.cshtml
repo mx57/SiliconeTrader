@@ -1,0 +1,24 @@
+﻿@model DefaultViewModel
+@{
+    ViewData["Title"] = "Help";
+    ViewData["Instance"] = Model.InstanceName;
+    ViewData["CustomPageHeader"] = true;
+}
+
+@section Styles{
+    <link href="~/Styles/Vendor/mdwiki.min.css" rel="stylesheet" />
+    <link href="~/Styles/Vendor/highlight.min.css" rel="stylesheet" />
+    <link href="~/Styles/Vendor/colorbox.min.css" rel="stylesheet" />
+    <link href="~/Styles/Views/help.css" rel="stylesheet" />
+}
+@section Scripts{
+    <script src="~/js/Vendor/highlight.min.js"></script>
+    <script src="~/js/Vendor/jquery.colorbox.min.js"></script>
+    <script type="text/javascript">
+        $.mdContentRoot = "/Bot/Help/";
+    </script>
+    <script src="~/js/Vendor/mdwiki.js"></script>
+}
+
+<div id="md-all" style="clear: both;">
+</div>

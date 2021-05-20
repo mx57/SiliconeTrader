@@ -1,0 +1,67 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <UserSecretsId>aspnet-SiliconeTrader.Machine-EC21F4A0-ED24-4E3C-A306-76451DAECD68</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="Config\backtesting.json" />
+    <Content Remove="Config\core.json" />
+    <Content Remove="Config\exchange.json" />
+    <Content Remove="Config\logging.json" />
+    <Content Remove="Config\notification.json" />
+    <Content Remove="Config\paths.json" />
+    <Content Remove="Config\rules.json" />
+    <Content Remove="Config\signals.json" />
+    <Content Remove="Config\trading.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AspNetCore.HealthChecks.UI" Version="5.0.1" />
+    <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="5.0.1" />
+    <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="5.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="5.0.5" />
+    <PackageReference Include="Microsoft.Identity.Web" Version="1.1.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.10.13" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SiliconeTrader.Backtesting\SiliconeTrader.Backtesting.csproj" />
+    <ProjectReference Include="..\SiliconeTrader.Core\SiliconeTrader.Core.csproj" />
+    <ProjectReference Include="..\SiliconeTrader.Exchange.Base\SiliconeTrader.Exchange.Base.csproj" />
+    <ProjectReference Include="..\SiliconeTrader.Exchange.Binance\SiliconeTrader.Exchange.Binance.csproj" />
+    <ProjectReference Include="..\SiliconeTrader.Machine.Client\SiliconeTrader.Machine.Client.csproj" />
+    <ProjectReference Include="..\SiliconeTrader.Rules\SiliconeTrader.Rules.csproj" />
+    <ProjectReference Include="..\SiliconeTrader.Signals.Base\SiliconeTrader.Signals.Base.csproj" />
+    <ProjectReference Include="..\SiliconeTrader.Signals.TradingView\SiliconeTrader.Signals.TradingView.csproj" />
+    <ProjectReference Include="..\SiliconeTrader.Trading\SiliconeTrader.Trading.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Config\backtesting.json" />
+    <None Include="Config\core.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="Config\exchange.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="Config\logging.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="Config\notification.json" />
+    <None Include="Config\paths.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="Config\rules.json" />
+    <None Include="Config\signals.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="Config\trading.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

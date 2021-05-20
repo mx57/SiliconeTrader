@@ -1,0 +1,16 @@
+﻿@model DefaultViewModel
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>This is where you will see aggregated stats from every node</p>
+    <p>A quick glance should tell me what's happening in the network. gains, losses, node status, notifications, alerts etc</p>
+</div>
+<a class="btn btn-info" asp-action="Status" asp-controller="Dashboard">Status:JSON</a>
+<ul>
+    <li>InstanceName = @Model.InstanceName</li>
+    <li>Version = @Model.Version</li>
+    <li>ReadOnlyMode = @Model.ReadOnlyMode</li>
+</ul>

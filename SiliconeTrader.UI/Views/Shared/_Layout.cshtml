@@ -1,0 +1,86 @@
+﻿<!DOCTYPE html>
+<html lang="en"> 
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    @if (User.Identity.IsAuthenticated)
+    {
+        <title>@ViewData["Title"] - SiliconeTrader (@ViewData["Instance"])</title>
+    }
+    else
+    {
+        <title>@ViewData["Title"] - SiliconeTrader</title>
+    }
+
+    <link rel="icon" href="@Url.Content("~/Images/favicon.ico")" type="image/x-icon" />
+    <link rel="shortcut icon" href="@Url.Content("~/Images/favicon.ico")" type="image/x-icon" />
+
+    <link href="~/Styles/Vendor/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Styles/Vendor/bootstrap-theme.min.css" rel="stylesheet" />
+    <link href="~/Styles/Vendor/fontawesome-all.min.css" rel="stylesheet" />
+    <link href="~/Styles/Vendor/datatables.min.css" rel="stylesheet" />
+    <link href="~/Styles/SiliconeTrader.css" rel="stylesheet" />
+    
+    @if (IsSectionDefined("Styles"))
+    {
+        @RenderSection("Styles", required: false)
+    }
+
+    <script>
+        var isAuthenticated = @User.Identity.IsAuthenticated.ToString().ToLowerInvariant();
+    </script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-dark">
+        <a class="navbar-brand" href="/">
+            <img src="~/Images/logo.png" width="30" height="30" class="d-inline-block align-top" alt="Logo">
+                SiliconeTrader (@ViewData["Instance"])
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+                <a class="nav-item nav-link" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+                <a class="nav-item nav-link" asp-controller="Trades" asp-action="Index">Trades</a>
+                <a class="nav-item nav-link" asp-controller="Markets" asp-action="Index">Market</a>
+                <a class="nav-item nav-link" asp-controller="Bot" asp-action="Stats">Stats</a>
+                <a class="nav-item nav-link" asp-controller="Bot" asp-action="Settings">Settings</a>
+                <a class="nav-item nav-link" asp-controller="Bot" asp-action="Log">Log</a>
+                <a class="nav-item nav-link" asp-controller="Bot" asp-action="Help">Help</a>
+                <span class="nav-item nav-link text-muted" title="Lovingly handcrafted by Jazzo"><text>v</text>@Model.Version</span>
+            </div>
+        </div>
+        <div class="navbar-text status-bar">
+            <span title="Available Balance">Balance:</span>
+            <span class="text-success" id="accountBalance" title="Available Balance">0</span> |
+            <span title="Global Rating">Rating:</span>
+            <span id="globalRating" title="Global Rating">N/A</span> |
+            <span title="Trailing">Trailing:</span>
+            <span class="text-info" id="trailingBuys">0</span>/<span class="text-info" id="trailingSells">0</span>/<span class="text-info" id="trailingSignals">0</span> |
+            <span title="Status">Status:</span>
+            <span class="badge badge-pill badge-success" id="healthChecks">ON</span>
+            <div class="status-icons">
+                <i class="fas fa-spinner text-info status-icon" id="statusRefreshIcon" title="Getting Status Info..."></i>
+                <i class="fas fa-exclamation-triangle text-warning status-icon" id="statusWarningIcon" title="Connection Error" style="display: none"></i>
+            </div>
+        </div>
+    </nav>
+    <div>
+        <div class="container-fluid">
+            @if (!ViewData.ContainsKey("CustomPageHeader"))
+            {<h3 class="page-header">@ViewData["Title"]</h3>}
+            <div class="collapse log-entries" id="logEntries"></div>
+            @RenderBody()
+        </div>
+    </div>
+    <!-- Scripts -->
+    <script src="~/js/Vendor/jquery-3.3.1.min.js"></script>
+    <script src="~/js/Vendor/popper.min.js"></script>
+    <script src="~/js/Vendor/bootstrap.min.js"></script>
+    <script src="~/js/Vendor/datatables.min.js"></script>
+    <script src="~/js/SiliconeTrader.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+    <!--// Scripts -->
+</body>
+</html>
