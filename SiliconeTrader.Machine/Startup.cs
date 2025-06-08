@@ -50,6 +50,9 @@ namespace SiliconeTrader.Machine
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "SiliconeTrader.Machine", Version = "v1" });
             });
+
+            // Register new service
+            services.AddTransient<SiliconeTrader.Core.Interfaces.Services.IMarketDataService, SiliconeTrader.Core.Services.MarketDataService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

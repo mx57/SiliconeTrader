@@ -1,6 +1,8 @@
-﻿namespace SiliconeTrader.Machine.Client.Models
+﻿using SiliconeTrader.Core.Models; // Added using for Core.Models
+
+namespace SiliconeTrader.Machine.Client.Models
 {
-    public class BuyRequest : BotRequest
+    public class BuyRequest : BotRequest // BotRequest is now from Core.Models
     {
         public decimal Amount { get; set; }
 

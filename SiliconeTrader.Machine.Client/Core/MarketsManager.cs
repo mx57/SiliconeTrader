@@ -18,8 +18,8 @@ namespace SiliconeTrader.Machine.Client.Core
             return new MarketsManager(restClient, modelConverter);
         }
 
-        public Task<MarketPairsResponse> GetMarketPairs(MarketPairsRequest request, CancellationToken cancellationToken)
-            => this.SendAsync<MarketPairsRequest, MarketPairsResponse>(request, HttpMethod.Post, "/api/ORCA/v1/market-pairs", cancellationToken);
+        public Task<SiliconeTrader.Core.Models.MarketPairsResponse> GetMarketPairs(SiliconeTrader.Core.Models.MarketPairsRequest request, CancellationToken cancellationToken)
+            => this.SendAsync<SiliconeTrader.Core.Models.MarketPairsRequest, SiliconeTrader.Core.Models.MarketPairsResponse>(request, HttpMethod.Post, "/api/ORCA/v1/market-pairs", cancellationToken);
 
         public Task<MarketSignalsResponse> GetMarketSignals(CancellationToken cancellationToken)
             => this.SendAsync<MarketSignalsResponse>(HttpMethod.Get, "/api/ORCA/v1/market-signals", cancellationToken);

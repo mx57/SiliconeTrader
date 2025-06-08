@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks; // Added for Task<>
 using Microsoft.AspNetCore.Mvc;
 using SiliconeTrader.Core;
 using SiliconeTrader.Machine.Client.Models;
@@ -10,61 +11,53 @@ namespace SiliconeTrader.Machine.Controllers
     public partial class OrcaApiController
     {
         [HttpGet("instance")]
-        public MarketViewModel Instance()
+        public ActionResult<MarketViewModel> Instance() // Changed return type
         {
-            ICoreService coreService = Application.Resolve<ICoreService>();
-
             var model = new MarketViewModel
             {
-                InstanceName = coreService.Config.InstanceName,
-                Version = coreService.Version,
-                ReadOnlyMode = coreService.Config.ReadOnlyMode
+                InstanceName = _coreService.Config.InstanceName,
+                Version = _coreService.Version,
+                ReadOnlyMode = _coreService.Config.ReadOnlyMode
             };
 
-            return model;
+            return Ok(model); // Return Ok(model)
         }
 
         [HttpGet("log")]
-        public LogViewModel Log()
+        public async Task<ActionResult<LogViewModel>> Log() // Made async, changed return type
         {
-            ICoreService coreService = Application.Resolve<ICoreService>();
-
-            ILoggingService loggingService = Application.Resolve<ILoggingService>();
-
+            var logEntries = await Task.Run(() => _loggingService.GetLogEntries().Reverse().Take(500).ToList()); // Wrapped in Task.Run
             var model = new LogViewModel()
             {
-                InstanceName = coreService.Config.InstanceName,
-                Version = coreService.Version,
-                ReadOnlyMode = coreService.Config.ReadOnlyMode,
-                LogEntries = loggingService.GetLogEntries().Reverse().Take(500)
+                InstanceName = _coreService.Config.InstanceName,
+                Version = _coreService.Version,
+                ReadOnlyMode = _coreService.Config.ReadOnlyMode,
+                LogEntries = logEntries
             };
 
-            return model;
+            return Ok(model); // Return Ok(model)
         }
 
         [HttpPost("services/restart")]
-        public IActionResult RestartServices()
+        public async Task<IActionResult> RestartServices() // Made async
         {
-            if (!Application.Resolve<ICoreService>().Config.ReadOnlyMode)
+            if (!_coreService.Config.ReadOnlyMode)
             {
-                ICoreService coreService = Application.Resolve<ICoreService>();
-                coreService.Restart();
-
-                return new OkResult();
+                await Task.Run(() => _coreService.Restart()); // Wrapped in Task.Run
+                return Ok(); // Return Ok()
             }
             else
             {
-                return new BadRequestResult();
+                return BadRequest(); // Return BadRequest()
             }
         }
 
         [HttpGet("rules")]
-        public RulesViewModel Rules()
+        public async Task<ActionResult<RulesViewModel>> Rules() // Changed return type
         {
-            ICoreService coreService = Application.Resolve<ICoreService>();
             var signalRuleStats = new Dictionary<string, SignalRuleStats>();
 
-            Dictionary<DateTimeOffset, List<TradeResult>> allTades = GetTrades();
+            Dictionary<DateTimeOffset, List<TradeResult>> allTades = await GetTradesAsync();
 
             foreach (TradeResult trade in allTades.Values.SelectMany(t => t))
             {
@@ -113,118 +106,120 @@ namespace SiliconeTrader.Machine.Controllers
 
             var model = new RulesViewModel
             {
-                InstanceName = coreService.Config.InstanceName,
-                Version = coreService.Version,
-                ReadOnlyMode = coreService.Config.ReadOnlyMode,
+                InstanceName = _coreService.Config.InstanceName,
+                Version = _coreService.Version,
+                ReadOnlyMode = _coreService.Config.ReadOnlyMode,
                 SignalRuleStats = signalRuleStats
             };
 
-            return model;
+            return Ok(model); // Return Ok(model)
         }
 
         [HttpPost("config/{configName}/save")]
-        public IActionResult SaveConfig(string configName, SaveConfigRequest request)
+        public async Task<IActionResult> SaveConfig(string configName, [FromBody] SaveConfigRequest request) // Added configName route parameter
         {
             if (request == null)
             {
-                return new BadRequestResult();
+                return BadRequest("Request cannot be null.");
+            }
+            // configName is now a parameter, so this specific check might be redundant if routing handles missing route params, but good for robustness.
+            if (string.IsNullOrWhiteSpace(configName))
+            {
+                return BadRequest("Config name cannot be empty.");
+            }
+            if (string.IsNullOrWhiteSpace(request.ConfigDefinition))
+            {
+                return BadRequest("Config definition cannot be empty.");
             }
 
-            if (!Application.Resolve<ICoreService>().Config.ReadOnlyMode
-                && !string.IsNullOrWhiteSpace(configName)
-                && !string.IsNullOrWhiteSpace(request.ConfigDefinition))
+            if (!_coreService.Config.ReadOnlyMode)
             {
-                Application.ConfigProvider.SetSectionJson(configName, request.ConfigDefinition);
-
-                return new OkResult();
+                await Task.Run(() => _configProvider.SetSectionJson(configName, request.ConfigDefinition)); // Wrapped in Task.Run
+                return Ok();
             }
             else
             {
-                return new BadRequestResult();
+                return BadRequest("Cannot save config in read-only mode.");
             }
         }
 
         [HttpGet("settings")]
-        public SettingsViewModel Settings()
+        public async Task<ActionResult<SettingsViewModel>> Settings() // Made async, changed return type
         {
-            ICoreService coreService = Application.Resolve<ICoreService>();
-
-            ITradingService tradingService = Application.Resolve<ITradingService>();
-            IEnumerable<IConfigurableService> allConfigurableServices = Application.Resolve<IEnumerable<IConfigurableService>>();
+            var configs = await Task.Run(() => _allConfigurableServices // Use injected _allConfigurableServices
+                .Where(s => !s.GetType().Name.Contains(Constants.ServiceNames.BacktestingService))
+                .OrderBy(s => s.ServiceName)
+                .ToDictionary(s => s.ServiceName, s => _configProvider.GetSectionJson(s.ServiceName))); // Use injected _configProvider
 
             var model = new SettingsViewModel()
             {
-                InstanceName = coreService.Config.InstanceName,
-                Version = coreService.Version,
-                ReadOnlyMode = coreService.Config.ReadOnlyMode,
-                BuyEnabled = tradingService.Config.BuyEnabled,
-                BuyDCAEnabled = tradingService.Config.BuyDCAEnabled,
-                SellEnabled = tradingService.Config.SellEnabled,
-                TradingSuspended = tradingService.IsTradingSuspended,
-                HealthCheckEnabled = coreService.Config.HealthCheckEnabled,
-                Configs = allConfigurableServices
-                    .Where(s => !s.GetType().Name.Contains(Constants.ServiceNames.BacktestingService))
-                    .OrderBy(s => s.ServiceName)
-                    .ToDictionary(s => s.ServiceName, s => Application.ConfigProvider.GetSectionJson(s.ServiceName))
+                InstanceName = _coreService.Config.InstanceName,
+                Version = _coreService.Version,
+                ReadOnlyMode = _coreService.Config.ReadOnlyMode,
+                BuyEnabled = _tradingService.Config.BuyEnabled,
+                BuyDCAEnabled = _tradingService.Config.BuyDCAEnabled,
+                SellEnabled = _tradingService.Config.SellEnabled,
+                TradingSuspended = _tradingService.IsTradingSuspended,
+                HealthCheckEnabled = _coreService.Config.HealthCheckEnabled,
+                Configs = configs
             };
 
-            return model;
+            return Ok(model); // Return Ok(model)
         }
 
         [HttpPost("settings")]
-        public SettingsViewModel Settings(SaveSettingsRequest model)
+        public async Task<ActionResult<SettingsViewModel>> Settings([FromBody] SaveSettingsRequest model) // Added [FromBody], Made async
         {
-            if (!Application.Resolve<ICoreService>().Config.ReadOnlyMode)
+            if (!_coreService.Config.ReadOnlyMode)
             {
-                ICoreService coreService = Application.Resolve<ICoreService>();
-                ITradingService tradingService = Application.Resolve<ITradingService>();
-
-                coreService.Config.HealthCheckEnabled = model.HealthCheckEnabled;
-                tradingService.Config.BuyEnabled = model.BuyEnabled;
-                tradingService.Config.BuyDCAEnabled = model.BuyDCAEnabled;
-                tradingService.Config.SellEnabled = model.SellEnabled;
+                // These are config property sets, likely quick, no Task.Run needed unless services do I/O on set.
+                _coreService.Config.HealthCheckEnabled = model.HealthCheckEnabled;
+                _tradingService.Config.BuyEnabled = model.BuyEnabled;
+                _tradingService.Config.BuyDCAEnabled = model.BuyDCAEnabled;
+                _tradingService.Config.SellEnabled = model.SellEnabled;
 
                 if (model.TradingSuspended)
                 {
-                    tradingService.SuspendTrading();
+                    await Task.Run(() => _tradingService.SuspendTrading()); // Wrapped in Task.Run
                 }
                 else
                 {
-                    tradingService.ResumeTrading();
+                    await Task.Run(() => _tradingService.ResumeTrading()); // Wrapped in Task.Run
                 }
-                return this.Settings();
+                // Re-fetch settings to return updated view
+                var settingsViewModel = await Settings(); // Await the async GET Settings()
+                return settingsViewModel;
             }
             else
             {
-                return this.Settings();
+                // In read-only mode, just return current settings
+                var settingsViewModel = await Settings();
+                return settingsViewModel;
             }
         }
 
         [HttpGet("stats")]
-        public StatsViewModel Stats()
+        public async Task<ActionResult<StatsViewModel>> Stats() // Changed return type
         {
-            ICoreService coreService = Application.Resolve<ICoreService>();
-            ITradingService tradingService = Application.Resolve<ITradingService>();
+            decimal accountInitialBalance = _tradingService.Config.VirtualTrading
+                ? _tradingService.Config.VirtualAccountInitialBalance
+                : _tradingService.Config.AccountInitialBalance;
 
-            decimal accountInitialBalance = tradingService.Config.VirtualTrading
-                ? tradingService.Config.VirtualAccountInitialBalance
-                : tradingService.Config.AccountInitialBalance;
-
-            DateTimeOffset accountInitialBalanceDate = tradingService.Config.VirtualTrading
+            DateTimeOffset accountInitialBalanceDate = _tradingService.Config.VirtualTrading
                 ? DateTimeOffset.Now.AddDays(-30)
-                : tradingService.Config.AccountInitialBalanceDate;
+                : _tradingService.Config.AccountInitialBalanceDate;
 
             var model = new StatsViewModel
             {
-                InstanceName = coreService.Config.InstanceName,
-                Version = coreService.Version,
-                ReadOnlyMode = coreService.Config.ReadOnlyMode,
-                TimezoneOffset = coreService.Config.TimezoneOffset,
+                InstanceName = _coreService.Config.InstanceName,
+                Version = _coreService.Version,
+                ReadOnlyMode = _coreService.Config.ReadOnlyMode,
+                TimezoneOffset = _coreService.Config.TimezoneOffset,
                 AccountInitialBalance = accountInitialBalance,
-                AccountBalance = tradingService.Account.GetTotalBalance(),
-                Market = tradingService.Config.Market,
+                AccountBalance = _tradingService.Account.GetTotalBalance(),
+                Market = _tradingService.Config.Market,
                 Balances = new Dictionary<DateTimeOffset, decimal>(),
-                Trades = GetTrades()
+                Trades = await GetTradesAsync()
             };
 
             foreach (KeyValuePair<DateTimeOffset, List<TradeResult>> kvp in model.Trades.OrderBy(k => k.Key))
@@ -250,32 +245,36 @@ namespace SiliconeTrader.Machine.Controllers
             return model;
         }
 
-        [HttpGet("status")] // TODO
-        public StatusApiModel Status()
+        [HttpGet("status")]
+        public async Task<ActionResult<StatusApiModel>> Status() // Made async, changed return type
         {
-            ILoggingService loggingService = Application.Resolve<ILoggingService>();
-            ITradingService tradingService = Application.Resolve<ITradingService>();
-            ISignalsService signalsService = Application.Resolve<ISignalsService>();
-            IHealthCheckService healthCheckService = Application.Resolve<IHealthCheckService>();
+            // Using injected services
+            var balance = await Task.Run(() => _tradingService.Account.GetBalance());
+            var globalRating = await Task.Run(() => _signalsService.GetGlobalRating());
+            var trailingBuys = await Task.Run(() => _tradingService.GetTrailingBuys());
+            var trailingSells = await Task.Run(() => _tradingService.GetTrailingSells());
+            var trailingSignals = await Task.Run(() => _signalsService.GetTrailingSignals());
+            var healthChecks = await Task.Run(() => _healthCheckService.GetHealthChecks().OrderBy(c => c.Name).ToList()); // ToList after Task.Run
+            var logEntries = await Task.Run(() => _loggingService.GetLogEntries().Reverse().Take(5).ToList()); // ToList after Task.Run
 
             var status = new StatusApiModel
             {
-                Balance = tradingService.Account.GetBalance(),
-                GlobalRating = signalsService.GetGlobalRating()?.ToString("0.000") ?? "N/A",
-                TrailingBuys = tradingService.GetTrailingBuys(),
-                TrailingSells = tradingService.GetTrailingSells(),
-                TrailingSignals = signalsService.GetTrailingSignals(),
-                TradingSuspended = tradingService.IsTradingSuspended,
-                HealthChecks = healthCheckService.GetHealthChecks().OrderBy(c => c.Name),
-                LogEntries = loggingService.GetLogEntries().Reverse().Take(5)
+                Balance = balance,
+                GlobalRating = globalRating?.ToString("0.000") ?? "N/A",
+                TrailingBuys = trailingBuys,
+                TrailingSells = trailingSells,
+                TrailingSignals = trailingSignals,
+                TradingSuspended = _tradingService.IsTradingSuspended, // This is likely a quick property access
+                HealthChecks = healthChecks,
+                LogEntries = logEntries
             };
-            return status;
+            return Ok(status);
         }
 
-        [HttpGet("version")] // TODO
-        public string Version()
+        [HttpGet("version")]
+        public ActionResult<string> Version() // Changed return type
         {
-            return Application.Resolve<ICoreService>().Version;
+            return Ok(_coreService.Version); // Return Ok(value)
         }
     }
 }

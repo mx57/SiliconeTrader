@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using SiliconeTrader.Core;
+using SiliconeTrader.Core.Models; // Added for BotResponse and IInstanceVersion
 
 namespace SiliconeTrader.Machine.Client.Models
 {

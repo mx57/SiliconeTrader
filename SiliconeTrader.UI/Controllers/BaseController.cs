@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using SiliconeTrader.Machine.Client;
-using SiliconeTrader.Machine.Client.Models;
-using SiliconeTrader.Machine.Client.Models.Responses;
+using SiliconeTrader.Core.Models; // Changed for DefaultViewModel, ErrorResponse
+using SiliconeTrader.Machine.Client.Models.Responses; // Kept for InstanceVersionResponse if still used
 using System.Threading;
 using System.Threading.Tasks;
 

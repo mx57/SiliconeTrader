@@ -1,22 +1,22 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SiliconeTrader.Core;
+using System.Threading.Tasks; // Added for Task<>
 
 namespace SiliconeTrader.Machine.Controllers
 {
     public partial class OrcaApiController
     {
         [HttpPost("account/refresh")]
-        public IActionResult RefreshAccount()
+        public async Task<IActionResult> RefreshAccount() // Made async
         {
-            if (!Application.Resolve<ICoreService>().Config.ReadOnlyMode)
+            if (!_coreService.Config.ReadOnlyMode)
             {
-                ITradingService tradingService = Application.Resolve<ITradingService>();
-                tradingService.Account.Refresh();
-                return new OkResult();
+                await Task.Run(() => _tradingService.Account.Refresh()); // Wrapped in Task.Run
+                return Ok();
             }
             else
             {
-                return new BadRequestResult();
+                return BadRequest();
             }
         }
     }

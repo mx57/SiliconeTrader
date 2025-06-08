@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SiliconeTrader.Machine.Client;
-using SiliconeTrader.Machine.Client.Models;
-using SiliconeTrader.Machine.Client.Models.Responses;
+using SiliconeTrader.Core.Models; // For DefaultViewModel
+using SiliconeTrader.Machine.Client.Models.Responses; // For InstanceVersionResponse
 
 namespace SiliconeTrader.UI.Controllers
 {

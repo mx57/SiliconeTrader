@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ExchangeSharp\ExchangeSharp\ExchangeSharp.csproj" />
+    <PackageReference Include="DigitalRuby.ExchangeSharp" Version="1.2.0" />
     <ProjectReference Include="..\SiliconeTrader.Core\SiliconeTrader.Core.csproj" />
     <ProjectReference Include="..\SiliconeTrader.Exchange.Base\SiliconeTrader.Exchange.Base.csproj" />
   </ItemGroup>

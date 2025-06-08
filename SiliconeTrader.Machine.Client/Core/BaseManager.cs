@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using SiliconeTrader.Machine.Client.Core.Abstractions;
-using SiliconeTrader.Machine.Client.Models;
+using SiliconeTrader.Core.Models; // For BotRequest, BotResponse, ErrorResponse
 
 namespace SiliconeTrader.Machine.Client.Core
 {

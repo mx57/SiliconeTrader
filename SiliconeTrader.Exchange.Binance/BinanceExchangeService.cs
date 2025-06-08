@@ -32,7 +32,7 @@ namespace SiliconeTrader.Exchange.Binance
                 IsBuy = order.Side == OrderSide.Buy,
                 Amount = order.Amount,
                 Price = order.Price,
-                Symbol = order.Pair
+                MarketSymbol = order.Pair // Changed Symbol to MarketSymbol
             }).Result;
 
             return new OrderDetails
@@ -41,39 +41,45 @@ namespace SiliconeTrader.Exchange.Binance
                 Result = (OrderResult)(int)result.Result,
                 Date = result.OrderDate,
                 OrderId = result.OrderId,
-                Pair = result.Symbol,
+                Pair = result.MarketSymbol, // Changed Symbol to MarketSymbol
                 Message = result.Message,
-                Amount = result.Amount,
-                AmountFilled = result.AmountFilled,
-                Price = result.Price,
-                AveragePrice = result.AveragePrice,
-                Fees = result.Fees,
+                Amount = result.Amount, // Direct assignment (decimal to decimal)
+                AmountFilled = result.AmountFilled ?? 0m, // Null-coalescing for decimal? to decimal
+                Price = result.Price ?? 0m, // Null-coalescing for decimal? to decimal
+                AveragePrice = result.AveragePrice ?? 0m, // Null-coalescing for decimal? to decimal
+                Fees = result.Fees ?? 0m, // Null-coalescing for decimal? to decimal
                 FeesCurrency = result.FeesCurrency
             };
         }
 
         public override IEnumerable<IOrderDetails> GetTrades(string pair)
         {
+            // Replaced this.Config.TradesSyncMaxDays with a default value (e.g., 30)
+            DateTime updatedSince = DateTime.UtcNow.Subtract(TimeSpan.FromDays(30));
             var myTrades = new List<OrderDetails>();
-            IEnumerable<ExchangeOrderResult> results = ((ExchangeBinanceAPI)this.Api).GetMyTrades(pair);
+            // Changed GetMyTrades to GetCompletedOrderDetailsAsync
+            IEnumerable<ExchangeOrderResult> results = this.Api.GetCompletedOrderDetailsAsync(pair, updatedSince).Result;
 
-            foreach (ExchangeOrderResult result in results)
+            if (results != null)
             {
-                myTrades.Add(new OrderDetails
+                foreach (ExchangeOrderResult result in results)
                 {
-                    Side = result.IsBuy ? OrderSide.Buy : OrderSide.Sell,
-                    Result = (OrderResult)(int)result.Result,
-                    Date = result.OrderDate,
-                    OrderId = result.OrderId,
-                    Pair = result.Symbol,
-                    Message = result.Message,
-                    Amount = result.Amount,
-                    AmountFilled = result.AmountFilled,
-                    Price = result.Price,
-                    AveragePrice = result.AveragePrice,
-                    Fees = result.Fees,
-                    FeesCurrency = result.FeesCurrency
-                });
+                    myTrades.Add(new OrderDetails
+                    {
+                        Side = result.IsBuy ? OrderSide.Buy : OrderSide.Sell,
+                        Result = (OrderResult)(int)result.Result,
+                        Date = result.OrderDate,
+                        OrderId = result.OrderId,
+                        Pair = result.MarketSymbol, // Changed Symbol to MarketSymbol
+                        Message = result.Message,
+                        Amount = result.Amount, // Direct assignment (decimal to decimal)
+                        AmountFilled = result.AmountFilled ?? 0m, // Null-coalescing for decimal? to decimal
+                        Price = result.Price ?? 0m, // Null-coalescing for decimal? to decimal
+                        AveragePrice = result.AveragePrice ?? 0m, // Null-coalescing for decimal? to decimal
+                        Fees = result.Fees ?? 0m, // Null-coalescing for decimal? to decimal
+                        FeesCurrency = result.FeesCurrency
+                    });
+                }
             }
 
             return myTrades;

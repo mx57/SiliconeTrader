@@ -32,7 +32,7 @@ namespace SiliconeTrader.Core
                 if (this.Config.TelegramEnabled)
                 {
                     telegramBotClient = new TelegramBotClient(this.Config.TelegramBotToken);
-                    User me = telegramBotClient.GetMeAsync().Result;
+                    User me = telegramBotClient.GetMeAsync().Result; // Assuming GetMeAsync still exists and this sync call is a separate issue
                     telegramChatId = new ChatId(this.Config.TelegramChatId);
                 }
                 loggingService.Info("Notification service started");
@@ -63,7 +63,14 @@ namespace SiliconeTrader.Core
                     try
                     {
                         string instanceName = Application.Resolve<ICoreService>().Config.InstanceName;
-                        telegramBotClient.SendTextMessageAsync(telegramChatId, $"({instanceName}) {message}", ParseMode.Default, false, !this.Config.TelegramAlertsEnabled);
+                        // Reverted to SendTextMessageAsync for Telegram.Bot v19.0.0
+                        telegramBotClient.SendTextMessageAsync(
+                            chatId: telegramChatId,
+                            text: $"({instanceName}) {message}",
+                            parseMode: null, // Equivalent to ParseMode.Default for plain text
+                            disableWebPagePreview: false,
+                            disableNotification: !this.Config.TelegramAlertsEnabled
+                            ).Wait(); // Blocking call
                     }
                     catch (Exception ex)
                     {

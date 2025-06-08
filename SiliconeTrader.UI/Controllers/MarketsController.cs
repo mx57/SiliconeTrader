@@ -4,7 +4,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SiliconeTrader.Machine.Client;
-using SiliconeTrader.Machine.Client.Models;
+using SiliconeTrader.Core.Models; // For MarketPairsRequest, MarketPairsResponse
+using SiliconeTrader.Machine.Client.Models; // For MarketSignalsResponse (if still used directly)
 
 namespace SiliconeTrader.UI.Controllers
 {

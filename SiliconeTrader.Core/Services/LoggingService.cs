@@ -222,7 +222,7 @@ namespace SiliconeTrader.Core
                 writer = new StringWriter(writerStringBuilder);
 
                 return new LoggerConfiguration()
-                    .ReadFrom.ConfigurationSection(this.RawConfig)
+                    .ReadFrom.Configuration(this.RawConfig) // Use the section specific to this service
                     .WriteTo.Logger(config => config.WriteTo.Memory(writer, LogEventLevel.Information, outputTemplate).Filter.ByIncludingOnly(filterExpression))
                     .CreateLogger();
             }

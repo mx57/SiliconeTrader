@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SiliconeTrader.Machine.Client;
-using SiliconeTrader.Machine.Client.Models;
+using SiliconeTrader.Core.Models; // Changed for DefaultViewModel
 using SiliconeTrader.UI.Models;
 
 namespace SiliconeTrader.UI.Controllers

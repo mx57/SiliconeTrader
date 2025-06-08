@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SiliconeTrader.Core;
-using SiliconeTrader.Machine.Client.Models;
+using SiliconeTrader.Machine.Client.Models; // Assuming request DTOs are here
+using SiliconeTrader.Core.Models; // For BotRequest if needed by request DTOs
+using System.Threading.Tasks;
 
 namespace SiliconeTrader.Machine.Controllers
 {
@@ -10,112 +12,102 @@ namespace SiliconeTrader.Machine.Controllers
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(422)]
-        public IActionResult Buy(BuyRequest buyRequest)
+        public async Task<IActionResult> Buy([FromBody] BuyRequest buyRequest)
         {
-            if (Application.Resolve<ICoreService>().Config.ReadOnlyMode)
+            if (_coreService.Config.ReadOnlyMode)
             {
-                return new BadRequestResult();
+                return BadRequest("Read-only mode enabled.");
             }
 
-            if (!string.IsNullOrWhiteSpace(buyRequest.Pair) && buyRequest.Amount > 0)
+            if (buyRequest == null || string.IsNullOrWhiteSpace(buyRequest.Pair) || buyRequest.Amount <= 0)
             {
-                ITradingService tradingService = Application.Resolve<ITradingService>();
-
-                tradingService.Buy(new BuyOptions(buyRequest.Pair)
-                {
-                    Amount = buyRequest.Amount,
-                    IgnoreExisting = true,
-                    ManualOrder = true
-                });
-
-                return new OkResult();
+                return BadRequest("Invalid buy request.");
             }
 
-            return new BadRequestResult();
+            await Task.Run(() => _tradingService.Buy(new BuyOptions(buyRequest.Pair)
+            {
+                Amount = buyRequest.Amount,
+                IgnoreExisting = true,
+                ManualOrder = true
+            }));
+
+            return Ok();
         }
 
         [HttpPost("buy-default")]
-        public IActionResult BuyDefault(BuyRequest buyRequest)
+        public async Task<IActionResult> BuyDefault([FromBody] BuyRequest buyRequest)
         {
-            if (Application.Resolve<ICoreService>().Config.ReadOnlyMode)
+            if (_coreService.Config.ReadOnlyMode)
             {
-                return new BadRequestResult();
+                return BadRequest("Read-only mode enabled.");
             }
 
-            if (!string.IsNullOrWhiteSpace(buyRequest.Pair))
+            if (buyRequest == null || string.IsNullOrWhiteSpace(buyRequest.Pair))
             {
-                ISignalsService signalsService = Application.Resolve<ISignalsService>();
-                ITradingService tradingService = Application.Resolve<ITradingService>();
+                return BadRequest("Invalid buy request.");
+            }
 
-                tradingService.Buy(new BuyOptions(buyRequest.Pair)
+            await Task.Run(() => _tradingService.Buy(new BuyOptions(buyRequest.Pair)
+            {
+                MaxCost = _tradingService.GetPairConfig(buyRequest.Pair).BuyMaxCost,
+                IgnoreExisting = true,
+                ManualOrder = true,
+                Metadata = new OrderMetadata
                 {
-                    MaxCost = tradingService.GetPairConfig(buyRequest.Pair).BuyMaxCost,
-                    IgnoreExisting = true,
-                    ManualOrder = true,
-                    Metadata = new OrderMetadata
-                    {
-                        BoughtGlobalRating = signalsService.GetGlobalRating()
-                    }
-                });
+                    BoughtGlobalRating = _signalsService.GetGlobalRating()
+                }
+            }));
 
-                return new OkResult();
-            }
-            else
-            {
-                return new BadRequestResult();
-            }
+            return Ok();
         }
 
         [HttpPost("sell")]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(422)]
-        public IActionResult Sell(SellRequest sellRequest)
+        public async Task<IActionResult> Sell([FromBody] SellRequest sellRequest)
         {
-            if (Application.Resolve<ICoreService>().Config.ReadOnlyMode)
+            if (_coreService.Config.ReadOnlyMode)
             {
-                return new BadRequestResult();
+                return BadRequest("Read-only mode enabled.");
             }
 
-            if (!string.IsNullOrWhiteSpace(sellRequest.Pair) && sellRequest.Amount > 0)
+            if (sellRequest == null || string.IsNullOrWhiteSpace(sellRequest.Pair) || sellRequest.Amount <= 0)
             {
-                ITradingService tradingService = Application.Resolve<ITradingService>();
-
-                tradingService.Sell(new SellOptions(sellRequest.Pair)
-                {
-                    Amount = sellRequest.Amount,
-                    ManualOrder = true
-                });
-
-                return new OkResult();
+                return BadRequest("Invalid sell request.");
             }
 
-            return new BadRequestResult();
+            await Task.Run(() => _tradingService.Sell(new SellOptions(sellRequest.Pair)
+            {
+                Amount = sellRequest.Amount,
+                ManualOrder = true
+            }));
+
+            return Ok();
         }
 
         [HttpPost("swap")]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(422)]
-        public IActionResult Swap(SwapRequest swapRequest)
+        public async Task<IActionResult> Swap([FromBody] SwapRequest swapRequest)
         {
-            if (!Application.Resolve<ICoreService>().Config.ReadOnlyMode
-                && !string.IsNullOrWhiteSpace(swapRequest.Pair)
-                && !string.IsNullOrWhiteSpace(swapRequest.Swap))
+            if (_coreService.Config.ReadOnlyMode)
             {
-                ITradingService tradingService = Application.Resolve<ITradingService>();
-
-                tradingService.Swap(new SwapOptions(swapRequest.Pair, swapRequest.Swap, new OrderMetadata())
-                {
-                    ManualOrder = true
-                });
-
-                return new OkResult();
+                return BadRequest("Read-only mode enabled.");
             }
-            else
+
+            if (swapRequest == null || string.IsNullOrWhiteSpace(swapRequest.Pair) || string.IsNullOrWhiteSpace(swapRequest.Swap))
             {
-                return new BadRequestResult();
+                 return BadRequest("Invalid swap request.");
             }
+
+            await Task.Run(() => _tradingService.Swap(new SwapOptions(swapRequest.Pair, swapRequest.Swap, new OrderMetadata())
+            {
+                ManualOrder = true
+            }));
+
+            return Ok();
         }
     }
 }

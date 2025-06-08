@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks; // Added for Task
 
 namespace SiliconeTrader.Machine.Misc
 {
@@ -52,16 +53,20 @@ namespace SiliconeTrader.Machine.Misc
             return fixedJson;
         }
 
-        public static IEnumerable<string> ReadAllLinesWriteSafe(string path)
+        public static async Task<string[]> ReadAllLinesWriteSafeAsync(string path)
         {
+            var lines = new List<string>();
+            // FileShare.ReadWrite allows reading even if the file is open for writing by another process.
             using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             using (var sr = new StreamReader(fs))
             {
-                while (!sr.EndOfStream)
+                string line;
+                while ((line = await sr.ReadLineAsync()) != null)
                 {
-                    yield return sr.ReadLine();
+                    lines.Add(line);
                 }
             }
+            return lines.ToArray();
         }
     }
 }

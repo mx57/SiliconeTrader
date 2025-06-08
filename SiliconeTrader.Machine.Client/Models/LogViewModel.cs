@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using SiliconeTrader.Core.Models;
 
 namespace SiliconeTrader.Machine.Client.Models
 {

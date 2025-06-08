@@ -1,6 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using SiliconeTrader.Machine.Client.Models;
+using SiliconeTrader.Core.Models; // For MarketPairsRequest, MarketPairsResponse
+using SiliconeTrader.Machine.Client.Models; // For MarketSignalsResponse
 
 namespace SiliconeTrader.Machine.Client.Core.Abstractions
 {

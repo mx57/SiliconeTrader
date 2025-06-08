@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using SiliconeTrader.Core.Models; // Added for BotRequest and BotResponse
 
 namespace SiliconeTrader.Machine.Client.Models
 {
