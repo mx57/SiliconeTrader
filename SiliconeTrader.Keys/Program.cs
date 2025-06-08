@@ -1,4 +1,4 @@
-﻿using ExchangeSharp;
+using ExchangeSharp;
 using System;
 using System.Collections.Generic;
 

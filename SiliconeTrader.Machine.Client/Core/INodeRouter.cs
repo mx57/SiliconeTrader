@@ -1,4 +1,4 @@
-﻿using SiliconeTrader.Core;
+using SiliconeTrader.Core;
 using SiliconeTrader.Machine.Client.Core.Abstractions;
 using SiliconeTrader.Machine.Client.Models;
 using System.Net.Http;
@@ -13,16 +13,7 @@ namespace SiliconeTrader.Machine.Client.Core
     //---------------[internet]----------------//
     public interface INode
     {
-        async Task Initialize()
-        {
-            // check health, make sure it works
-            HttpResponseMessage response = await this.Channel.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/health"), CancellationToken.None);
-
-            response.EnsureSuccessStatusCode();
-
-            // start the health check timer
-            this.HealthCheckTimedTask.Start();
-        }
+        Task Initialize();
 
         /// <summary>
         /// This is what the router uses for REST calls. It could be the same or a different or a new! 
@@ -48,27 +39,7 @@ namespace SiliconeTrader.Machine.Client.Core
         /// </summary>
         /// <param name="requestMessage"></param>
         /// <returns></returns>
-        Task<HttpResponseMessage> SendAsync(HttpRequestMessage requestMessage, CancellationToken cancellationToken)
-        {
-            //Analytics.Report(NodeId, "SEND.URI");
-
-            if (this.LastNodeHealth.Status == Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Healthy)
-            {
-                this.Authenticator.Sign(requestMessage);
-
-                Task<HttpResponseMessage> response = this.Channel.SendAsync(requestMessage, cancellationToken);
-
-                //if( ! response.Authenticate() )
-                //     Analytics.Report(NodeId, "AUTH_FAIL");
-
-                //Analytics.Report(NodeId, "RESPONSE.URI");
-                return response;
-            }
-
-            //Analytics.Report(NodeId, "NodeProblem");
-
-            return null;
-        }
+        Task<HttpResponseMessage> SendAsync(HttpRequestMessage requestMessage, CancellationToken cancellationToken);
     }
 
 
@@ -76,36 +47,27 @@ namespace SiliconeTrader.Machine.Client.Core
     {
 
 
-        void Sign(HttpRequestMessage requestMessage)
-        {
-            //ChannelBuilder.Build().Process(requestMessage);
-            // will go thru each channel processor item, add whatever value to headers, sign messages,
-            // and then returns the auth headers for API requests added to HttpRequestMessage
-        }
+        void Sign(HttpRequestMessage requestMessage);
     }
 
-    //public class BinanceChannel : IAuthenticationChannel
-    //{
-    //    public BinanceChannel(BinanceConfiguration configuration)
-    //    {
-    //        ChannelBuilder
-    //            .New(configuration)
-    //            .Timestamp(header: true, key: "X-TIMESTAMP")
-    //            .HmacSigner(secret: "BinanceSecret")
-    //            .ApiKey(header: true, key: "X-API-KEY")
-    //            .AuthKey(header: true, key:  "X-BIN-AUTH");
-
-    //    }
-    //}
+    public class BinanceChannel : IAuthenticationChannel
+    {
+        // Assuming BinanceConfiguration is defined elsewhere
+        // public BinanceChannel(BinanceConfiguration configuration)
+        // {
+        //     // ... existing ChannelBuilder logic ...
+        // }
+        public void Sign(HttpRequestMessage requestMessage) { /* Implementation */ }
+    }
 
 
     public class CoinbaseChannel : IAuthenticationChannel
     {
-
+        public void Sign(HttpRequestMessage requestMessage) { /* Implementation */ }
     }
     public class KrakenChannel : IAuthenticationChannel
     {
-
+        public void Sign(HttpRequestMessage requestMessage) { /* Implementation */ }
     }
 
     public interface IAuthenticator
@@ -116,6 +78,15 @@ namespace SiliconeTrader.Machine.Client.Core
     public class NodeRouter : INodeRouter
     {
         private readonly INode[] Nodes;
+
+        public NodeRouter(INode[] nodes)
+        {
+            Nodes = nodes;
+            foreach (var node in Nodes)
+            {
+                node.Initialize().Wait(); // Synchronously wait for initialization
+            }
+        }
 
         private Task<HttpResponseMessage> Route(HttpRequestMessage requestMessage, CancellationToken cancellationToken)
         {

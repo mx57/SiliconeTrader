@@ -30,7 +30,7 @@ namespace SiliconeTrader.UI
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseMigrationsEndPoint();
+
             }
             else
             {
@@ -69,7 +69,10 @@ namespace SiliconeTrader.UI
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
-                endpoints.MapHealthChecksUI();
+                endpoints.MapHealthChecksUI(setup =>
+                {
+                    setup.AddCustomStylesheet("/css/healthchecks-ui.css");
+                });
             });
         }
 
@@ -91,7 +94,7 @@ namespace SiliconeTrader.UI
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
                     this.Configuration.GetConnectionString("DefaultConnection")));
-            services.AddDatabaseDeveloperPageExceptionFilter();
+
 
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();

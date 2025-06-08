@@ -1,4 +1,4 @@
-﻿using SiliconeTrader.Core;
+using SiliconeTrader.Core;
 using SiliconeTrader.Exchange.Base;
 using System;
 using System.Linq;
@@ -18,7 +18,7 @@ namespace SiliconeTrader.Trading
             this.tradingService = tradingService;
         }
 
-        public IOrderDetails PlaceBuyOrder(BuyOptions options)
+        public async Task<IOrderDetails> PlaceBuyOrder(BuyOptions options)
         {
             var orderDetails = new OrderDetails();
             tradingService.StopTrailingBuy(options.Pair);
@@ -29,8 +29,8 @@ namespace SiliconeTrader.Trading
                 ITradingPair tradingPair = tradingService.Account.GetTradingPair(options.Pair, includeDust: true);
                 options.Price = tradingService.GetPrice(options.Pair, TradePriceType.Ask, normalize: false);
                 options.Amount = options.Amount ?? (options.MaxCost.Value / (options.Pair.EndsWith(Constants.Markets.USDT) ? 1 : options.Price));
-                options.Price = tradingService.Exchange.ClampOrderPrice(options.Pair, options.Price.Value);
-                options.Amount = tradingService.Exchange.ClampOrderAmount(options.Pair, options.Amount.Value);
+                options.Price = await tradingService.Exchange.ClampOrderPrice(options.Pair, options.Price.Value);
+                options.Amount = await tradingService.Exchange.ClampOrderAmount(options.Pair, options.Amount.Value);
 
                 if (tradingService.CanBuy(options, out string message))
                 {
@@ -105,7 +105,7 @@ namespace SiliconeTrader.Trading
             return orderDetails;
         }
 
-        public IOrderDetails PlaceSellOrder(SellOptions options)
+        public async Task<IOrderDetails> PlaceSellOrder(SellOptions options)
         {
             var orderDetails = new OrderDetails();
             tradingService.StopTrailingSell(options.Pair);
@@ -117,8 +117,8 @@ namespace SiliconeTrader.Trading
                 ITradingPair tradingPair = tradingService.Account.GetTradingPair(normalizedPair, includeDust: true);
                 options.Price = tradingService.GetPrice(options.Pair, TradePriceType.Bid);
                 options.Amount = options.Amount ?? tradingPair?.Amount ?? 0;
-                options.Price = options.Price != 1 ? tradingService.Exchange.ClampOrderPrice(options.Pair, options.Price.Value) : 1; // 1 = USDT price
-                options.Amount = tradingService.Exchange.ClampOrderAmount(options.Pair, options.Amount.Value);
+                options.Price = options.Price != 1 ? await tradingService.Exchange.ClampOrderPrice(options.Pair, options.Price.Value) : 1; // 1 = USDT price
+                options.Amount = await tradingService.Exchange.ClampOrderAmount(options.Pair, options.Amount.Value);
 
                 if (tradingService.CanSell(options, out string message))
                 {

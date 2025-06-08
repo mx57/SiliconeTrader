@@ -1,12 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace SiliconeTrader.Core
 {
     public interface IOrderingService
     {
-        IOrderDetails PlaceBuyOrder(BuyOptions options);
-        IOrderDetails PlaceSellOrder(SellOptions options);
+        Task<IOrderDetails> PlaceBuyOrder(BuyOptions options);
+        Task<IOrderDetails> PlaceSellOrder(SellOptions options);
     }
 }

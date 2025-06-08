@@ -1,0 +1,10 @@
+Get-Content : Не удается найти путь "M:\SiliconeTrader\SiliconeTraderpu
+blish_log.txt", так как он не существует.
+строка:1 знак:1
++ Get-Content -Path M:SiliconeTraderpublish_log.txt -Tail 50
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (M:\SiliconeTrad...publi 
+   sh_log.txt:String) [Get-Content], ItemNotFoundException
+    + FullyQualifiedErrorId : PathNotFound,Microsoft.PowerShell.Comman 
+   ds.GetContentCommand
+ 

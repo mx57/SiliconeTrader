@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Web;
@@ -11,7 +11,7 @@ namespace SiliconeTrader.Machine.Client.Core
 {
     public class ModelConverter : IModelConverter
     {
-        private static readonly JsonSerializerSettings JsonSerializerSettings = new()
+        private static readonly JsonSerializerSettings JsonSerializerSettings = new JsonSerializerSettings()
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver(),
             NullValueHandling = NullValueHandling.Ignore,
@@ -59,7 +59,7 @@ namespace SiliconeTrader.Machine.Client.Core
 
         private static string GetQueryData(PropertyInfo param, string value)
         {
-            string camelCaseName = char.ToLowerInvariant(param.Name[0]) + param.Name[1..];
+            string camelCaseName = char.ToLowerInvariant(param.Name[0]) + param.Name.Substring(1);
             string encodedValue = HttpUtility.UrlEncode(value);
 
             return $"{camelCaseName}={encodedValue}";

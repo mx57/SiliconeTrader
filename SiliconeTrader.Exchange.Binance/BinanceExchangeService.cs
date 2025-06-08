@@ -1,4 +1,4 @@
-﻿using ExchangeSharp;
+using ExchangeSharp;
 using SiliconeTrader.Core;
 using SiliconeTrader.Exchange.Base;
 using System;
@@ -52,10 +52,10 @@ namespace SiliconeTrader.Exchange.Binance
             };
         }
 
-        public override IEnumerable<IOrderDetails> GetTrades(string pair)
+        public override async Task<IEnumerable<IOrderDetails>> GetTrades(string pair)
         {
             var myTrades = new List<OrderDetails>();
-            IEnumerable<ExchangeOrderResult> results = ((ExchangeBinanceAPI)this.Api).GetMyTrades(pair);
+            IEnumerable<ExchangeOrderResult> results = await ((ExchangeBinanceAPI)this.Api).GetMyTradesAsync(pair);
 
             foreach (ExchangeOrderResult result in results)
             {
@@ -65,13 +65,13 @@ namespace SiliconeTrader.Exchange.Binance
                     Result = (OrderResult)(int)result.Result,
                     Date = result.OrderDate,
                     OrderId = result.OrderId,
-                    Pair = result.Symbol,
+                    Pair = result.MarketSymbol,
                     Message = result.Message,
                     Amount = result.Amount,
-                    AmountFilled = result.AmountFilled,
-                    Price = result.Price,
-                    AveragePrice = result.AveragePrice,
-                    Fees = result.Fees,
+                    AmountFilled = result.AmountFilled.GetValueOrDefault(0m),
+                    Price = result.Price.GetValueOrDefault(0m),
+                    AveragePrice = result.AveragePrice.GetValueOrDefault(0m),
+                    Fees = result.Fees.GetValueOrDefault(0m),
                     FeesCurrency = result.FeesCurrency
                 });
             }
@@ -110,18 +110,18 @@ namespace SiliconeTrader.Exchange.Binance
 
                             if (market == ArbitrageMarket.ETH)
                             {
-                                directArbitragePercentage = (1 / pairTicker.AskPrice * marketTicker.BidPrice * arbitrageTicker.BidPrice - 1) * 100;
-                                reverseArbitragePercentage = (1 / arbitrageTicker.AskPrice / marketTicker.AskPrice * pairTicker.BidPrice - 1) * 100;
+                                directArbitragePercentage = (1 / pairTicker.AskPrice.GetValueOrDefault(0m) * marketTicker.BidPrice.GetValueOrDefault(0m) * arbitrageTicker.BidPrice.GetValueOrDefault(0m) - 1) * 100;
+                                reverseArbitragePercentage = (1 / arbitrageTicker.AskPrice.GetValueOrDefault(0m) / marketTicker.AskPrice.GetValueOrDefault(0m) * pairTicker.BidPrice.GetValueOrDefault(0m) - 1) * 100;
                             }
                             else if (market == ArbitrageMarket.BNB)
                             {
-                                directArbitragePercentage = (1 / pairTicker.AskPrice * marketTicker.BidPrice * arbitrageTicker.BidPrice - 1) * 100;
-                                reverseArbitragePercentage = (1 / arbitrageTicker.AskPrice / marketTicker.AskPrice * pairTicker.BidPrice - 1) * 100;
+                                directArbitragePercentage = (1 / pairTicker.AskPrice.GetValueOrDefault(0m) * marketTicker.BidPrice.GetValueOrDefault(0m) * arbitrageTicker.BidPrice.GetValueOrDefault(0m) - 1) * 100;
+                                reverseArbitragePercentage = (1 / arbitrageTicker.AskPrice.GetValueOrDefault(0m) / marketTicker.AskPrice.GetValueOrDefault(0m) * pairTicker.BidPrice.GetValueOrDefault(0m) - 1) * 100;
                             }
                             else if (market == ArbitrageMarket.USDT)
                             {
-                                directArbitragePercentage = (1 / pairTicker.AskPrice * marketTicker.BidPrice / arbitrageTicker.AskPrice - 1) * 100;
-                                reverseArbitragePercentage = (arbitrageTicker.BidPrice / marketTicker.AskPrice * pairTicker.BidPrice - 1) * 100;
+                                directArbitragePercentage = (1 / pairTicker.AskPrice.GetValueOrDefault(0m) * marketTicker.BidPrice.GetValueOrDefault(0m) / arbitrageTicker.AskPrice.GetValueOrDefault(0m) - 1) * 100;
+                                reverseArbitragePercentage = (arbitrageTicker.BidPrice.GetValueOrDefault(0m) / marketTicker.AskPrice.GetValueOrDefault(0m) * pairTicker.BidPrice.GetValueOrDefault(0m) - 1) * 100;
                             }
 
                             if ((directArbitragePercentage > arbitrage.Percentage || !arbitrage.IsAssigned) && (arbitrageType == null || arbitrageType == ArbitrageType.Direct))
