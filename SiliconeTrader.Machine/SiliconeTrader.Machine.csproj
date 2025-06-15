@@ -7,18 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="Config\backtesting.json" />
-    <Content Remove="Config\core.json" />
-    <Content Remove="Config\exchange.json" />
-    <Content Remove="Config\logging.json" />
-    <Content Remove="Config\notification.json" />
-    <Content Remove="Config\paths.json" />
-    <Content Remove="Config\rules.json" />
-    <Content Remove="Config\signals.json" />
-    <Content Remove="Config\trading.json" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="AspNetCore.HealthChecks.UI" Version="3.1.0" />
     <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="3.1.0" />
     <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="3.1.0" />
@@ -41,27 +29,9 @@
     <ProjectReference Include="..\SiliconeTrader.Trading\SiliconeTrader.Trading.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Config\backtesting.json" />
-    <None Include="Config\core.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
-    <None Include="Config\exchange.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
-    <None Include="Config\logging.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
-    <None Include="Config\notification.json" />
-    <None Include="Config\paths.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
-    <None Include="Config\rules.json" />
-    <None Include="Config\signals.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
-    <None Include="Config\trading.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
+    <Content Include="Config\**\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>
